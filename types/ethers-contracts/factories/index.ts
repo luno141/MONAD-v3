@@ -2,3 +2,5 @@
 /* tslint:disable */
 /* eslint-disable */
 export { RelicRushArtifactMarket__factory } from './RelicRushArtifactMarket__factory.js';
+export { RelicRushRelicForge__factory } from './RelicRushRelicForge__factory.js';
+export { RelicRushRunLedger__factory } from './RelicRushRunLedger__factory.js';

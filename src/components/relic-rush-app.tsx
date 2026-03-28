@@ -5,6 +5,7 @@ import { ethers } from "ethers";
 import { PhaserDungeon } from "@/src/components/phaser-dungeon";
 import { ARCHETYPES, DEFAULT_MARKET_PRICE_WEI, DUNGEON_NAME, MOCK_PVP_OPPONENTS } from "@/src/game/content";
 import {
+  buildItemInstance,
   buildWalletLabel,
   consumeItem,
   createId,
@@ -25,6 +26,7 @@ import type {
   MarketplaceListing,
   PlayerProfile,
   PlayerSnapshot,
+  TxAction,
 } from "@/src/game/types";
 import {
   bootstrapProfile,
@@ -41,17 +43,29 @@ import {
   relicRushMarketAddress,
 } from "@/src/lib/relicRushArtifactMarket";
 import {
+  createRelicRushRunLedger,
+  hasRelicRushLedgerAddress,
+  relicRushLedgerAddress,
+} from "@/src/lib/relicRushRunLedger";
+import {
+  createRelicRushRelicForge,
+  hasRelicRushForgeAddress,
+} from "@/src/lib/relicRushRelicForge";
+import {
+  addMonadToWallet,
   connectWallet,
   expectedChainId,
   expectedChainName,
+  getMonadExplorerTxUrl,
   hasInjectedWallet,
+  hasMonadExplorerUrl,
   readWalletState,
   shortenAddress,
   switchToExpectedChain,
   type WalletState,
 } from "@/src/lib/wallet";
 
-type TabId = "dungeon" | "inventory" | "marketplace" | "pvp";
+type TabId = "dungeon" | "inventory" | "marketplace" | "pvp" | "forge";
 
 const STORAGE_KEY = "relic-rush-player-id";
 const SNAPSHOT_STORAGE_KEY = "relic-rush-player-snapshot";
@@ -144,6 +158,8 @@ export function RelicRushApp() {
   const [runActive, setRunActive] = useState(false);
   const [runId, setRunId] = useState("");
   const [priceInputs, setPriceInputs] = useState<Record<string, string>>({});
+  const [txPending, setTxPending] = useState(false);
+  const [txActions, setTxActions] = useState<TxAction[]>([]);
 
   const derivedStats = profile ? getDerivedStats(profile) : null;
   const healthPercent = derivedStats
@@ -369,9 +385,40 @@ export function RelicRushApp() {
       await switchToExpectedChain();
       await refreshWallet();
       setStatus(`Switched wallet to ${expectedChainName}.`);
-    } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Network switch failed.");
+    } catch {
+      try {
+        await addMonadToWallet();
+        await refreshWallet();
+        setStatus(`Added and switched to ${expectedChainName}.`);
+      } catch (error) {
+        setStatus(error instanceof Error ? error.message : "Network switch failed.");
+      }
     }
+  }
+
+  function recordTxAction(label: string, txHash: string, confirmationMs: number) {
+    const action: TxAction = {
+      id: createId("tx"),
+      label,
+      txHash,
+      explorerUrl: getMonadExplorerTxUrl(txHash),
+      confirmationMs,
+      timestamp: new Date().toISOString(),
+    };
+    setTxActions((current) => [action, ...current].slice(0, 5));
+    return action;
+  }
+
+  function requireWalletReady(): boolean {
+    if (!wallet.address) {
+      setStatus("Connect a wallet first.");
+      return false;
+    }
+    if (!wallet.correctNetwork) {
+      setStatus(`Switch wallet to ${expectedChainName} first.`);
+      return false;
+    }
+    return true;
   }
 
   function handleStartExpedition() {
@@ -432,6 +479,11 @@ export function RelicRushApp() {
         ? "Vault breached. Review your haul and list premium relics."
         : "Run failed. Refit your gear and try again.",
     );
+
+    // Record the run on-chain if wallet is ready and it was a victory
+    if (summary.outcome === "victory") {
+      void handleRecordRunOnChain(summary);
+    }
   }
 
   function handleEquip(item: InventoryItem) {
@@ -568,29 +620,187 @@ export function RelicRushApp() {
     }
   }
 
-  async function handleMintPreview(item: InventoryItem) {
-    if (!wallet.address) {
-      setStatus("Connect a wallet before previewing on-chain artifact ownership.");
-      return;
-    }
-    if (!wallet.correctNetwork) {
-      setStatus(`Switch wallet to ${expectedChainName} first.`);
-      return;
-    }
+  async function handleMintOnChain(item: InventoryItem) {
+    if (!requireWalletReady() || !profile) return;
     if (!hasRelicRushMarketAddress()) {
-      setStatus("UNKNOWN - MANUAL STEP REQUIRED: set NEXT_PUBLIC_RELIC_RUSH_MARKET_ADDRESS.");
+      setStatus("Set NEXT_PUBLIC_RELIC_RUSH_MARKET_ADDRESS to enable minting.");
       return;
     }
 
     try {
+      setTxPending(true);
+      setStatus(`Minting ${item.name} on Monad…`);
       const provider = new ethers.BrowserProvider(window.ethereum!);
       const signer = await provider.getSigner();
-      createRelicRushArtifactMarket(signer, relicRushMarketAddress);
-      setStatus(
-        `${item.name} is chain-ready. Actual mint/list settlement needs the deployed market contract and owner privileges.`,
-      );
-    } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Artifact market preview failed.");
+      const market = createRelicRushArtifactMarket(signer, relicRushMarketAddress);
+
+      const artifactId = `artifact-${item.templateId}-${item.instanceId}`;
+      const tokenURI = `data:application/json,${encodeURIComponent(JSON.stringify({ name: item.name, description: item.description, icon: item.icon, rarity: item.rarity }))}`;
+
+      const startMs = performance.now();
+      const tx = await market.mintPremiumArtifact(wallet.address, artifactId, tokenURI);
+      const receipt = await tx.wait();
+      const confirmMs = Math.round(performance.now() - startMs);
+
+      const action = recordTxAction(`Mint ${item.name}`, receipt.hash, confirmMs);
+
+      setProfile((current) => {
+        if (!current) return current;
+        return {
+          ...current,
+          inventory: current.inventory.map((inv) =>
+            inv.instanceId === item.instanceId
+              ? { ...inv, chainTokenId: receipt.hash }
+              : inv,
+          ),
+        };
+      });
+
+      const explorerLink = action.explorerUrl ? ` Explorer: ${action.explorerUrl}` : "";
+      setStatus(`${item.name} minted on Monad in ${confirmMs}ms. Tx: ${shortenAddress(receipt.hash)}.${explorerLink}`);
+    } catch (error: any) {
+      const reason = error?.reason || error?.message || "Mint failed.";
+      setStatus(`Mint failed: ${reason}`);
+    } finally {
+      setTxPending(false);
+    }
+  }
+
+  async function handleListOnChain(item: InventoryItem) {
+    if (!requireWalletReady() || !profile) return;
+    if (!hasRelicRushMarketAddress()) {
+      setStatus("Set NEXT_PUBLIC_RELIC_RUSH_MARKET_ADDRESS to enable listing.");
+      return;
+    }
+    if (!item.chainTokenId) {
+      setStatus("Mint this artifact on-chain first before listing.");
+      return;
+    }
+
+    try {
+      setTxPending(true);
+      const monInput = priceInputs[item.instanceId] || "0.0025";
+      const priceWei = ethers.parseEther(monInput);
+      setStatus(`Listing ${item.name} for ${monInput} MON on Monad…`);
+
+      const provider = new ethers.BrowserProvider(window.ethereum!);
+      const signer = await provider.getSigner();
+      const market = createRelicRushArtifactMarket(signer, relicRushMarketAddress);
+
+      // Approve market to transfer the token
+      const approveTx = await market.approve(relicRushMarketAddress, item.chainTokenId);
+      await approveTx.wait();
+
+      const startMs = performance.now();
+      const tx = await market.createListing(item.chainTokenId, priceWei);
+      const receipt = await tx.wait();
+      const confirmMs = Math.round(performance.now() - startMs);
+
+      recordTxAction(`List ${item.name}`, receipt.hash, confirmMs);
+
+      // Sync off-chain listing too
+      await handleCreateListing(item);
+      setStatus(`${item.name} listed for ${monInput} MON on Monad in ${confirmMs}ms.`);
+    } catch (error: any) {
+      const reason = error?.reason || error?.message || "Listing failed.";
+      setStatus(`On-chain listing failed: ${reason}. Falling back to off-chain listing.`);
+      await handleCreateListing(item);
+    } finally {
+      setTxPending(false);
+    }
+  }
+
+  async function handleBuyOnChain(listing: MarketplaceListing) {
+    if (!requireWalletReady() || !profile) return;
+
+    if (listing.chainListingId && hasRelicRushMarketAddress()) {
+      try {
+        setTxPending(true);
+        setStatus(`Buying ${listing.item.name} on Monad…`);
+        const provider = new ethers.BrowserProvider(window.ethereum!);
+        const signer = await provider.getSigner();
+        const market = createRelicRushArtifactMarket(signer, relicRushMarketAddress);
+
+        const startMs = performance.now();
+        const tx = await market.buyListing(listing.chainListingId, { value: listing.priceWei });
+        const receipt = await tx.wait();
+        const confirmMs = Math.round(performance.now() - startMs);
+
+        recordTxAction(`Buy ${listing.item.name}`, receipt.hash, confirmMs);
+        setStatus(`Purchased ${listing.item.name} on-chain in ${confirmMs}ms!`);
+      } catch (error: any) {
+        const reason = error?.reason || error?.message || "On-chain purchase failed.";
+        setStatus(`On-chain buy failed: ${reason}. Processing off-chain.`);
+      } finally {
+        setTxPending(false);
+      }
+    }
+
+    // Always sync off-chain
+    await handleBuyListing(listing);
+  }
+
+  async function handleRecordRunOnChain(summary: DungeonRunSummary) {
+    if (!wallet.address || !wallet.correctNetwork || !hasRelicRushLedgerAddress()) return;
+
+    try {
+      setTxPending(true);
+      setStatus("Recording run on Monad…");
+      const provider = new ethers.BrowserProvider(window.ethereum!);
+      const signer = await provider.getSigner();
+      const ledger = createRelicRushRunLedger(signer, relicRushLedgerAddress);
+
+      const score = summary.enemiesDefeated * 50 + summary.lootCollected * 25;
+      const startMs = performance.now();
+      const tx = await ledger.recordRun(1, score);
+      const receipt = await tx.wait();
+      const confirmMs = Math.round(performance.now() - startMs);
+
+      recordTxAction("Record Run", receipt.hash, confirmMs);
+      setStatus(`Run recorded on Monad in ${confirmMs}ms. Score: ${score}.`);
+    } catch (error: any) {
+      setStatus(`Run recording skipped: ${error?.reason || error?.message || "Ledger unavailable."}`);
+    } finally {
+      setTxPending(false);
+    }
+  }
+
+  async function handleForgeRelic() {
+    if (!requireWalletReady() || !profile) return;
+    if (!hasRelicRushForgeAddress()) {
+      setStatus("Set NEXT_PUBLIC_RELIC_RUSH_FORGE_ADDRESS to enable forging.");
+      return;
+    }
+
+    try {
+      setTxPending(true);
+      setStatus("Forging a relic on Monad…");
+      const provider = new ethers.BrowserProvider(window.ethereum!);
+      const signer = await provider.getSigner();
+      const forge = createRelicRushRelicForge(signer);
+
+      const forgeFee = await forge.forgeFee();
+      const artifactId = `forge-${createId("relic")}`;
+      const forgedItem = buildItemInstance("starforged-idol", "loot", Math.random() < 0.3 ? "epic" : "rare");
+      const tokenURI = `data:application/json,${encodeURIComponent(JSON.stringify({ name: forgedItem.name, description: forgedItem.description, icon: forgedItem.icon, rarity: forgedItem.rarity }))}`;
+
+      const startMs = performance.now();
+      const tx = await forge.forgeRandomRelic(artifactId, tokenURI, { value: forgeFee });
+      const receipt = await tx.wait();
+      const confirmMs = Math.round(performance.now() - startMs);
+
+      recordTxAction(`Forge ${forgedItem.name}`, receipt.hash, confirmMs);
+
+      const nextProfile: PlayerProfile = {
+        ...profile,
+        inventory: [{ ...forgedItem, chainTokenId: receipt.hash }, ...profile.inventory],
+      };
+      void persistProfile(nextProfile, `Forged ${forgedItem.name} on Monad in ${confirmMs}ms!`);
+    } catch (error: any) {
+      const reason = error?.reason || error?.message || "Forge failed.";
+      setStatus(`Forge failed: ${reason}`);
+    } finally {
+      setTxPending(false);
     }
   }
 
@@ -774,7 +984,7 @@ export function RelicRushApp() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              {(["dungeon", "inventory", "marketplace", "pvp"] as TabId[]).map((tab) => (
+              {(["dungeon", "inventory", "marketplace", "pvp", "forge"] as TabId[]).map((tab) => (
                 <button
                   key={tab}
                   type="button"
@@ -791,7 +1001,9 @@ export function RelicRushApp() {
                       ? "Inventory"
                       : tab === "marketplace"
                         ? "Marketplace"
-                        : "PvP Arena"}
+                        : tab === "pvp"
+                          ? "PvP Arena"
+                          : "⛒ Relic Forge"}
                 </button>
               ))}
             </div>
@@ -944,13 +1156,20 @@ export function RelicRushApp() {
                                 ) : null}
                                 {item.premium ? (
                                   <>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleMintPreview(item)}
-                                      className="rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-2 text-xs text-amber-100"
-                                    >
-                                      Chain Preview
-                                    </button>
+                                    {!item.chainTokenId ? (
+                                      <button
+                                        type="button"
+                                        onClick={() => void handleMintOnChain(item)}
+                                        disabled={txPending || apiBusy}
+                                        className="rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-2 text-xs text-amber-100 disabled:opacity-40"
+                                      >
+                                        {txPending ? "Minting…" : "Mint on Monad"}
+                                      </button>
+                                    ) : (
+                                      <span className="rounded-full border border-lime-400/20 bg-lime-400/10 px-2 py-1 text-[11px] text-lime-100">
+                                        ✓ On-chain
+                                      </span>
+                                    )}
                                     <button
                                       type="button"
                                       onClick={() => setActiveTab("marketplace")}
@@ -1034,14 +1253,25 @@ export function RelicRushApp() {
                                       }
                                       className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-cyan-400/35"
                                     />
-                                    <button
-                                      type="button"
-                                      onClick={() => void handleCreateListing(item)}
-                                      disabled={item.listed || apiBusy}
-                                      className="rounded-2xl border border-lime-400/30 bg-lime-400/10 px-4 py-3 text-sm text-lime-100 disabled:opacity-40"
-                                    >
-                                      {item.listed ? "Already Listed" : "List Artifact"}
-                                    </button>
+                                    {item.chainTokenId && hasRelicRushMarketAddress() ? (
+                                      <button
+                                        type="button"
+                                        onClick={() => void handleListOnChain(item)}
+                                        disabled={item.listed || apiBusy || txPending}
+                                        className="rounded-2xl border border-cyan-400/30 bg-cyan-400/10 px-4 py-3 text-sm text-cyan-100 disabled:opacity-40"
+                                      >
+                                        {item.listed ? "Listed" : txPending ? "Listing…" : "List on Monad"}
+                                      </button>
+                                    ) : (
+                                      <button
+                                        type="button"
+                                        onClick={() => void handleCreateListing(item)}
+                                        disabled={item.listed || apiBusy}
+                                        className="rounded-2xl border border-lime-400/30 bg-lime-400/10 px-4 py-3 text-sm text-lime-100 disabled:opacity-40"
+                                      >
+                                        {item.listed ? "Already Listed" : "List Artifact"}
+                                      </button>
+                                    )}
                                   </div>
                                 </div>
                               ))
@@ -1085,18 +1315,20 @@ export function RelicRushApp() {
                                 <div className="mt-4 flex flex-wrap gap-2">
                                   <button
                                     type="button"
-                                    onClick={() => void handleBuyListing(listing)}
-                                    disabled={apiBusy || listing.sellerPlayerId === profile.playerId}
+                                    onClick={() => void handleBuyOnChain(listing)}
+                                    disabled={apiBusy || txPending || listing.sellerPlayerId === profile.playerId}
                                     className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-2 text-xs text-cyan-100 disabled:opacity-40"
                                   >
                                     {listing.sellerPlayerId === profile.playerId
                                       ? "Your Listing"
-                                      : "Buy Artifact"}
+                                      : listing.chainListingId
+                                        ? "Buy on Monad"
+                                        : "Buy Artifact"}
                                   </button>
                                   <span className="rounded-full border border-white/10 bg-black/25 px-3 py-2 text-xs text-slate-300">
                                     {listing.chainListingId
-                                      ? `Chain listing ${listing.chainListingId}`
-                                      : "Off-chain listing record with chain-ready hooks"}
+                                      ? `Chain listing ${shortenAddress(listing.chainListingId)}`
+                                      : "Off-chain listing"}
                                   </span>
                                 </div>
                               </div>
@@ -1160,9 +1392,116 @@ export function RelicRushApp() {
                     </div>
                   </Section>
                 ) : null}
+
+                {activeTab === "forge" ? (
+                  <Section
+                    eyebrow="Relic Forge"
+                    title="On-chain artifact crafting"
+                    actions={
+                      <button
+                        type="button"
+                        onClick={() => void handleForgeRelic()}
+                        disabled={txPending || apiBusy || !wallet.address}
+                        className="rounded-full border border-amber-300/35 bg-amber-300/15 px-4 py-2 text-sm text-amber-100 transition hover:bg-amber-300/25 disabled:opacity-50"
+                      >
+                        {txPending ? "Forging…" : "⛒ Forge a Relic"}
+                      </button>
+                    }
+                  >
+                    <div className="grid gap-4 lg:grid-cols-2">
+                      <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-5">
+                        <h3 className="text-2xl font-semibold text-white">Relic Forge</h3>
+                        <p className="mt-3 text-sm leading-7 text-slate-300">
+                          Pay a small forge fee in MON to mint a new premium artifact directly
+                          on Monad. The forge creates a Starforged Idol with random rarity
+                          (rare or epic). Your new relic appears in your inventory and is
+                          immediately chain-owned.
+                        </p>
+                        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                          <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4 text-sm text-slate-300">
+                            <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">Forge Fee</p>
+                            <p className="mt-2 text-lg font-semibold text-amber-200">0.001 MON</p>
+                          </div>
+                          <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4 text-sm text-slate-300">
+                            <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">Output</p>
+                            <p className="mt-2 text-lg font-semibold text-white">🜂 Starforged Idol</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="rounded-[1.5rem] border border-amber-300/15 bg-amber-300/5 p-5">
+                        <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">How it works</p>
+                        <ol className="mt-4 space-y-3 text-sm text-slate-300">
+                          <li>1. Connect your wallet to {expectedChainName}</li>
+                          <li>2. Click “Forge a Relic” and approve the 0.001 MON transaction</li>
+                          <li>3. Your new relic is minted as an ERC-721 on Monad</li>
+                          <li>4. Equip it, list it on the marketplace, or trade it</li>
+                        </ol>
+                        <div className="mt-5 rounded-2xl border border-amber-300/20 bg-amber-300/10 p-4 text-xs text-amber-100">
+                          Demo-grade randomness. Not suitable for production value-bearing
+                          decisions.
+                        </div>
+                      </div>
+                    </div>
+                  </Section>
+                ) : null}
               </div>
 
               <div className="flex flex-col gap-5">
+                <Section eyebrow="Monad Network" title="On-chain activity">
+                  <div className="space-y-4">
+                    <div className="rounded-3xl border border-white/10 bg-black/20 p-4">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">Network</p>
+                          <p className="mt-2 text-sm text-white">{expectedChainName}</p>
+                        </div>
+                        <div>
+                          <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">Chain ID</p>
+                          <p className="mt-2 text-sm text-white">{expectedChainId}</p>
+                        </div>
+                      </div>
+                      {txPending ? (
+                        <div className="mt-3 rounded-2xl border border-cyan-400/20 bg-cyan-400/10 p-3 text-xs text-cyan-100">
+                          ⏳ Transaction pending…
+                        </div>
+                      ) : null}
+                    </div>
+
+                    {txActions.length > 0 ? (
+                      <div className="rounded-3xl border border-white/10 bg-black/20 p-4">
+                        <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">
+                          Recent on-chain actions
+                        </p>
+                        <div className="mt-3 space-y-2">
+                          {txActions.map((action) => (
+                            <div
+                              key={action.id}
+                              className="rounded-2xl border border-lime-400/15 bg-lime-400/5 p-3"
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <p className="text-sm font-medium text-white">{action.label}</p>
+                                <span className="rounded-full border border-lime-400/25 bg-lime-400/10 px-2 py-0.5 text-[11px] text-lime-200">
+                                  {action.confirmationMs}ms
+                                </span>
+                              </div>
+                              <p className="mt-1 text-xs text-slate-400">
+                                Tx: {shortenAddress(action.txHash)}
+                                {action.explorerUrl ? (
+                                  <> · <a href={action.explorerUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-300 underline">View on Explorer</a></>
+                                ) : null}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="rounded-3xl border border-white/10 bg-black/20 p-4 text-sm text-slate-400">
+                        No on-chain actions yet. Mint, list, buy, or forge to see Monad confirmation times.
+                      </div>
+                    )}
+                  </div>
+                </Section>
+
                 <Section eyebrow="Profile" title={profile.displayName}>
                   <div className="space-y-4">
                     <div className="rounded-3xl border border-white/10 bg-black/20 p-4">

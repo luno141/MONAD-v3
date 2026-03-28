@@ -2,5 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 export type { RelicRushArtifactMarket } from './RelicRushArtifactMarket.js';
+export type { RelicRushRelicForge } from './RelicRushRelicForge.js';
+export type { RelicRushRunLedger } from './RelicRushRunLedger.js';
 export * as factories from './factories/index.js';
 export { RelicRushArtifactMarket__factory } from './factories/RelicRushArtifactMarket__factory.js';
+export { RelicRushRelicForge__factory } from './factories/RelicRushRelicForge__factory.js';
+export { RelicRushRunLedger__factory } from './factories/RelicRushRunLedger__factory.js';

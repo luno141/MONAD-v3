@@ -185,3 +185,12 @@ export type LootRollContext = {
   enemyType: EnemyType;
   luck: number;
 };
+
+export type TxAction = {
+  id: string;
+  label: string;
+  txHash: string;
+  explorerUrl: string;
+  confirmationMs: number;
+  timestamp: string;
+};

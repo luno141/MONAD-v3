@@ -11,12 +11,20 @@ import * as Contracts from "./index.js";
 declare module "@nomicfoundation/hardhat-ethers/types" {
   interface HardhatEthersHelpers extends HardhatEthersHelpersBase {
   getContractFactory(name: 'RelicRushArtifactMarket', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.RelicRushArtifactMarket__factory>
+getContractFactory(name: 'RelicRushRelicForge', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.RelicRushRelicForge__factory>
+getContractFactory(name: 'RelicRushRunLedger', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.RelicRushRunLedger__factory>
 
   getContractAt(name: 'RelicRushArtifactMarket', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.RelicRushArtifactMarket>
+getContractAt(name: 'RelicRushRelicForge', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.RelicRushRelicForge>
+getContractAt(name: 'RelicRushRunLedger', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.RelicRushRunLedger>
 
   deployContract(name: 'RelicRushArtifactMarket', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.RelicRushArtifactMarket>
+deployContract(name: 'RelicRushRelicForge', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.RelicRushRelicForge>
+deployContract(name: 'RelicRushRunLedger', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.RelicRushRunLedger>
 
   deployContract(name: 'RelicRushArtifactMarket', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.RelicRushArtifactMarket>
+deployContract(name: 'RelicRushRelicForge', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.RelicRushRelicForge>
+deployContract(name: 'RelicRushRunLedger', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.RelicRushRunLedger>
 
     // default types
     getContractFactory(

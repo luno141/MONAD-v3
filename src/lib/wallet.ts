@@ -84,3 +84,55 @@ export function shortenAddress(address: string | null) {
 
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
+
+const monadExplorerUrl =
+  process.env.NEXT_PUBLIC_MONAD_EXPLORER_URL ?? "";
+
+export function getMonadExplorerTxUrl(txHash: string) {
+  if (!monadExplorerUrl) {
+    return "";
+  }
+  return `${monadExplorerUrl.replace(/\/+$/, "")}/tx/${txHash}`;
+}
+
+export function getMonadExplorerAddressUrl(address: string) {
+  if (!monadExplorerUrl) {
+    return "";
+  }
+  return `${monadExplorerUrl.replace(/\/+$/, "")}/address/${address}`;
+}
+
+export function hasMonadExplorerUrl() {
+  return monadExplorerUrl.length > 0;
+}
+
+const monadRpcUrl =
+  process.env.NEXT_PUBLIC_MONAD_RPC_URL ?? "https://testnet-rpc.monad.xyz/";
+
+const monadCurrencySymbol =
+  process.env.NEXT_PUBLIC_MONAD_CURRENCY_SYMBOL ?? "MON";
+
+export async function addMonadToWallet() {
+  if (!window.ethereum) {
+    throw new Error("MetaMask-compatible wallet not detected.");
+  }
+
+  await window.ethereum.request?.({
+    method: "wallet_addEthereumChain",
+    params: [
+      {
+        chainId: `0x${expectedChainId.toString(16)}`,
+        chainName: expectedChainName,
+        rpcUrls: [monadRpcUrl],
+        nativeCurrency: {
+          name: monadCurrencySymbol,
+          symbol: monadCurrencySymbol,
+          decimals: 18,
+        },
+        ...(monadExplorerUrl
+          ? { blockExplorerUrls: [monadExplorerUrl] }
+          : {}),
+      },
+    ],
+  });
+}
