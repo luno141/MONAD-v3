@@ -48,7 +48,7 @@ contract RelicRushArtifactMarket is ERC721URIStorage, Ownable, ReentrancyGuard {
     event ArtifactListingCanceled(uint256 indexed tokenId);
 
     constructor(address initialOwner)
-        ERC721("Relic Rush Premium Artifacts", "RRA")
+    ERC721("KHANFLICT Premium Artifacts", "KPA")
         Ownable(initialOwner)
     {}
 

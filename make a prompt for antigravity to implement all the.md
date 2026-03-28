@@ -6,7 +6,7 @@ Here’s a prompt you can paste into Antigravity (or any code agent) to make it 
 
 ***
 
-**Prompt for Antigravity (Monad Relic Rush Implementation)**
+**Prompt for Antigravity (Monad KHANFLICT Implementation)**
 
 You are an expert full‑stack/Web3 engineer working inside my repo `MONAD-v3`. Tech stack:
 
@@ -17,7 +17,7 @@ You are an expert full‑stack/Web3 engineer working inside my repo `MONAD-v3`. 
 
 **Goal**
 
-Turn this repo into a Monad‑native vertical slice of “Relic Rush”, a 2D dungeon ARPG where:
+Turn this repo into a Monad‑native vertical slice of “KHANFLICT”, a 2D dungeon ARPG where:
 
 1. Premium relics are **real ERC‑721s on Monad**, minted/listed/bought from the game.
 2. Successful runs are optionally **logged on‑chain** in a lightweight run ledger (leaderboard‑friendly).

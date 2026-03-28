@@ -3,6 +3,7 @@
 import { useEffect, useEffectEvent, useState } from "react";
 import { ethers } from "ethers";
 import { PhaserDungeon } from "@/src/components/phaser-dungeon";
+<<<<<<< HEAD
 import {
   HeroBootstrapPanels,
   WalletGatePanel,
@@ -26,6 +27,10 @@ import {
   SQUAD_SPOTLIGHTS,
   STORY_BEATS,
 } from "@/src/game/content";
+=======
+import { ArcadeInstructionsScreen } from "@/src/components/dungeon/arcade-instructions-screen";
+import { ARCHETYPES, DEFAULT_MARKET_PRICE_WEI, DUNGEON_NAME, MOCK_PVP_OPPONENTS } from "@/src/game/content";
+>>>>>>> 939bf3d (mkc3)
 import {
   buildItemInstance,
   buildWalletLabel,
@@ -117,6 +122,72 @@ const DEFAULT_WALLET: WalletState = {
   correctNetwork: false,
 };
 
+<<<<<<< HEAD
+=======
+function Section({
+  eyebrow,
+  title,
+  children,
+  actions,
+}: {
+  eyebrow: string;
+  title: string;
+  children: React.ReactNode;
+  actions?: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-none border border-[#00FFFF33] bg-[#050510] p-5 shadow-[0_0_60px_rgba(86,229,255,0.04)] backdrop-blur-xl">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">
+            {eyebrow}
+          </p>
+          <h2 className="mt-2 text-xl font-semibold text-white">{title}</h2>
+        </div>
+        {actions}
+      </div>
+      <div className="mt-4">{children}</div>
+    </section>
+  );
+}
+
+function StatTile({
+  label,
+  value,
+  emphasis,
+}: {
+  label: string;
+  value: React.ReactNode;
+  emphasis?: string;
+}) {
+  return (
+    <div className="rounded-none border border-[#00FFFF33] bg-black p-4">
+      <p className="text-[11px] uppercase tracking-[0.26em] text-slate-500">
+        {label}
+      </p>
+      <p className={`mt-3 text-2xl font-semibold ${emphasis ?? "text-white"}`}>
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function InventoryBadge({ item }: { item: InventoryItem }) {
+  return (
+    <span
+      className="inline-flex items-center rounded-none border px-2 py-1 text-[11px] uppercase tracking-[0.2em]"
+      style={{
+        borderColor: `${rarityColor(item.rarity)}55`,
+        color: rarityColor(item.rarity),
+        background: `${rarityColor(item.rarity)}15`,
+      }}
+    >
+      {item.rarity}
+    </span>
+  );
+}
+
+>>>>>>> 939bf3d (mkc3)
 export function RelicRushApp() {
   const [activeTab, setActiveTab] = useState<TabId>("dungeon");
   const [playerId, setPlayerId] = useState<string | null>(null);
@@ -139,6 +210,7 @@ export function RelicRushApp() {
   const [runId, setRunId] = useState("");
   const [priceInputs, setPriceInputs] = useState<Record<string, string>>({});
   const [txPending, setTxPending] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
 
   const derivedStats = profile ? getDerivedStats(profile) : null;
   const playerBlueprint = ARCHETYPES[PLAYER_ARCHETYPE];
@@ -434,7 +506,7 @@ export function RelicRushApp() {
     }
 
     setRunId(createId("run"));
-    setRunActive(true);
+    setShowInstructions(true);
     setCurrentHealth(derivedStats.health);
     setActiveTab("dungeon");
     setCombatLog([
@@ -443,12 +515,18 @@ export function RelicRushApp() {
     setStatus("Scene live. Move with WASD and attack with Space.");
   }
 
+  function handleFinishInstructions() {
+    setShowInstructions(false);
+    setRunActive(true);
+  }
+
   function handleAbandonRun() {
     if (!derivedStats) {
       return;
     }
 
     setRunActive(false);
+    setShowInstructions(false);
     setRunId("");
     setCurrentHealth(derivedStats.health);
     setCombatLog([createLog("Scene cut. Regroup, rewrite the plan, and try again.", "bad")]);
@@ -929,10 +1007,11 @@ export function RelicRushApp() {
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.16),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(180,255,71,0.12),transparent_28%),linear-gradient(135deg,#050816,#0d1228_42%,#1a1034)] px-4 py-5 text-white sm:px-6 lg:px-8">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-5">
-        <section className="rounded-[2rem] border border-white/10 bg-slate-950/55 p-5 shadow-[0_24px_120px_rgba(0,0,0,0.35)] backdrop-blur-xl">
+        <section className="rounded-none border border-[#00FFFF33] bg-[#050510] p-5 shadow-[0_24px_120px_rgba(0,0,0,0.35)] backdrop-blur-xl">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-3xl space-y-4">
               <div className="flex flex-wrap gap-2">
+<<<<<<< HEAD
                 <span className="inline-flex rounded-full border border-cyan-400/25 bg-cyan-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.28em] text-cyan-200">
                   {GAME_TITLE}
                 </span>
@@ -941,6 +1020,16 @@ export function RelicRushApp() {
                 </span>
                 <span className="inline-flex rounded-full border border-amber-300/20 bg-amber-300/10 px-3 py-1 text-[11px] uppercase tracking-[0.28em] text-amber-100">
                   Meme Boss Escalation
+=======
+                <span className="inline-flex rounded-none border border-cyan-400/25 bg-cyan-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.28em] text-cyan-200">
+                  KHAN FLICT
+                </span>
+                <span className="inline-flex rounded-none border border-lime-400/20 bg-lime-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.28em] text-lime-200">
+                  Dungeon RPG MVP
+                </span>
+                <span className="inline-flex rounded-none border border-amber-300/20 bg-amber-300/10 px-3 py-1 text-[11px] uppercase tracking-[0.28em] text-amber-100">
+                  PvP Ready
+>>>>>>> 939bf3d (mkc3)
                 </span>
               </div>
               <div className="space-y-2">
@@ -948,13 +1037,19 @@ export function RelicRushApp() {
                   Rescue Aishwarya. Roast Salman. Loot everything that glows.
                 </h1>
                 <p className="max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
+<<<<<<< HEAD
                   {HERO_HOOK}
+=======
+                  KHAN FLICT is a fast 2D dungeon run built around instant action,
+                  gear progression, premium artifact ownership, and a compact market loop
+                  ready for Monad settlement.
+>>>>>>> 939bf3d (mkc3)
                 </p>
               </div>
             </div>
 
             <div className="grid gap-3 sm:min-w-[340px]">
-              <div className="rounded-3xl border border-white/10 bg-black/20 p-4">
+              <div className="rounded-none border border-[#00FFFF33] bg-black p-4">
                 <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">
                   Wallet
                 </p>
@@ -970,7 +1065,7 @@ export function RelicRushApp() {
                 <button
                   type="button"
                   onClick={() => void handleConnectWallet()}
-                  className="rounded-full border border-cyan-400/35 bg-cyan-400/15 px-4 py-3 text-sm text-cyan-100 transition hover:bg-cyan-400/25"
+                  className="rounded-none border border-cyan-400/35 bg-cyan-400/15 px-4 py-3 text-sm text-cyan-100 transition hover:bg-cyan-400/25"
                 >
                   {wallet.address ? "Reconnect Wallet" : "Connect Wallet"}
                 </button>
@@ -987,7 +1082,7 @@ export function RelicRushApp() {
                   <button
                     type="button"
                     onClick={() => void handleSwitchChain()}
-                    className="rounded-full border border-rose-400/35 bg-rose-400/15 px-4 py-3 text-sm text-rose-100 transition hover:bg-rose-400/25"
+                    className="rounded-none border border-rose-400/35 bg-rose-400/15 px-4 py-3 text-sm text-rose-100 transition hover:bg-rose-400/25"
                   >
                     Switch To {expectedChainName}
                   </button>
@@ -996,7 +1091,7 @@ export function RelicRushApp() {
                   <button
                     type="button"
                     onClick={handleResetSave}
-                    className="rounded-full border border-white/15 bg-white/8 px-4 py-3 text-sm text-white transition hover:bg-white/14"
+                    className="rounded-none border border-white/15 bg-white/8 px-4 py-3 text-sm text-white transition hover:bg-white/14"
                   >
                     New Save
                   </button>
@@ -1006,6 +1101,7 @@ export function RelicRushApp() {
           </div>
         </section>
 
+<<<<<<< HEAD
         <section className="grid gap-4 lg:grid-cols-3">
           {STORY_BEATS.map((beat) => (
             <div
@@ -1022,6 +1118,91 @@ export function RelicRushApp() {
         </section>
 
         {profile ? (
+=======
+        {!profile ? (
+          <section className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
+            <Section eyebrow="Start Here" title="Choose your delver">
+              <div className="grid gap-4 lg:grid-cols-3">
+                {Object.values(ARCHETYPES).map((entry) => (
+                  <button
+                    key={entry.archetype}
+                    type="button"
+                    onClick={() => setSelectedArchetype(entry.archetype)}
+                    className={`rounded-none border p-5 text-left transition ${
+                      selectedArchetype === entry.archetype
+                        ? "border-lime-400/40 bg-lime-400/10"
+                        : "border-[#00FFFF33] bg-black hover:border-cyan-400/30"
+                    }`}
+                  >
+                    <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">
+                      {entry.archetype}
+                    </p>
+                    <h3 className="mt-3 text-2xl font-semibold text-white">
+                      {entry.title}
+                    </h3>
+                    <p className="mt-3 text-sm text-slate-300">{entry.signature}</p>
+                    <p className="mt-4 text-sm text-slate-400">{entry.lore}</p>
+                    <div className="mt-5 grid grid-cols-2 gap-2 text-xs text-slate-300">
+                      <span>HP {entry.baseStats.health}</span>
+                      <span>ATK {entry.baseStats.attack}</span>
+                      <span>DEF {entry.baseStats.defense}</span>
+                      <span>SPD {entry.baseStats.speed}</span>
+                      <span>CRIT {Math.round(entry.baseStats.critChance * 100)}%</span>
+                      <span>LUCK {entry.baseStats.luck}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </Section>
+
+            <Section
+              eyebrow="Forge Profile"
+              title="Bootstrap the MVP run"
+              actions={
+                <button
+                  type="button"
+                  onClick={() => void handleCreateProfile()}
+                  disabled={apiBusy}
+                  className="rounded-none border border-lime-400/35 bg-lime-400/15 px-4 py-2 text-sm text-lime-100 disabled:opacity-50"
+                >
+                  {apiBusy ? "Forging..." : "Create Character"}
+                </button>
+              }
+            >
+              <div className="space-y-4">
+                <div className="rounded-none border border-[#00FFFF33] bg-black p-4">
+                  <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">
+                    Callsign
+                  </p>
+                  <input
+                    value={draftName}
+                    onChange={(event) => setDraftName(event.target.value)}
+                    placeholder={`${selectedArchetype} callsign`}
+                    className="mt-3 w-full rounded-none border border-[#00FFFF33] bg-[#050510] px-4 py-3 text-white outline-none focus:border-cyan-400/35"
+                  />
+                </div>
+
+                <div className="rounded-none border border-[#00FFFF33] bg-black p-4">
+                  <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">
+                    Selected Archetype
+                  </p>
+                  <p className="mt-3 text-2xl font-semibold text-white">
+                    {selectedArchetype}
+                  </p>
+                  <p className="mt-2 text-sm text-slate-300">
+                    Starter kit, profile, and persistence scaffold will initialize from this class.
+                  </p>
+                </div>
+
+                <div className="rounded-none border border-cyan-400/15 bg-cyan-400/10 p-4 text-sm text-cyan-100">
+                  Core loop in this MVP is off-chain. Premium artifact ownership and settlement
+                  are wired separately so gameplay stays fast.
+                </div>
+              </div>
+            </Section>
+          </section>
+        ) : (
+>>>>>>> 939bf3d (mkc3)
           <>
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
               <StatTile label="Hero" value={PLAYER_HERO_NAME} emphasis="text-cyan-100" />
@@ -1037,10 +1218,10 @@ export function RelicRushApp() {
                   key={tab}
                   type="button"
                   onClick={() => setActiveTab(tab)}
-                  className={`rounded-full border px-4 py-2 text-sm transition ${
+                  className={`rounded-none border px-4 py-2 text-sm transition ${
                     activeTab === tab
                       ? "border-cyan-400/35 bg-cyan-400/15 text-cyan-100"
-                      : "border-white/10 bg-black/20 text-slate-300 hover:border-white/20"
+                      : "border-[#00FFFF33] bg-black text-slate-300 hover:border-white/20"
                   }`}
                 >
                   {tab === "dungeon"
@@ -1065,13 +1246,18 @@ export function RelicRushApp() {
                     actions={
                       runActive ? (
                         <div className="flex flex-wrap gap-2">
+<<<<<<< HEAD
                           <span className="inline-flex items-center rounded-full border border-cyan-400/25 bg-cyan-400/10 px-4 py-2 text-sm text-cyan-100">
                             Scene Live
+=======
+                          <span className="inline-flex items-center rounded-none border border-cyan-400/25 bg-cyan-400/10 px-4 py-2 text-sm text-cyan-100">
+                            Expedition Active
+>>>>>>> 939bf3d (mkc3)
                           </span>
                           <button
                             type="button"
                             onClick={handleAbandonRun}
-                            className="rounded-full border border-rose-400/35 bg-rose-400/15 px-4 py-2 text-sm text-rose-100 transition hover:bg-rose-400/25"
+                            className="rounded-none border border-rose-400/35 bg-rose-400/15 px-4 py-2 text-sm text-rose-100 transition hover:bg-rose-400/25"
                           >
                             Cut the Scene
                           </button>
@@ -1081,7 +1267,7 @@ export function RelicRushApp() {
                           type="button"
                           onClick={handleStartExpedition}
                           disabled={apiBusy}
-                          className="rounded-full border border-lime-400/35 bg-lime-400/15 px-4 py-2 text-sm text-lime-100 transition hover:bg-lime-400/25 disabled:opacity-50"
+                          className="rounded-none border border-lime-400/35 bg-lime-400/15 px-4 py-2 text-sm text-lime-100 transition hover:bg-lime-400/25 disabled:opacity-50"
                         >
                           Start Act One
                         </button>
@@ -1104,7 +1290,7 @@ export function RelicRushApp() {
                       />
                     ) : (
                       <div className="grid gap-4 lg:grid-cols-[1fr_0.9fr]">
-                        <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-5">
+                        <div className="rounded-none border border-[#00FFFF33] bg-black p-5">
                           <h3 className="text-2xl font-semibold text-white">
                             Khanflict Briefing
                           </h3>
@@ -1114,6 +1300,7 @@ export function RelicRushApp() {
                             before the final SUV phase turns the whole arena into a demolition reel.
                           </p>
                           <div className="mt-5 grid gap-3 sm:grid-cols-3">
+<<<<<<< HEAD
                             <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4 text-sm text-slate-300">
                               Chota Pandit
                             </div>
@@ -1122,6 +1309,16 @@ export function RelicRushApp() {
                             </div>
                             <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4 text-sm text-slate-300">
                               SUV Spirit
+=======
+                            <div className="rounded-none border border-[#00FFFF33] bg-[#050510] p-4 text-sm text-slate-300">
+                              Bog Slime
+                            </div>
+                            <div className="rounded-none border border-[#00FFFF33] bg-[#050510] p-4 text-sm text-slate-300">
+                              Dust Skeleton
+                            </div>
+                            <div className="rounded-none border border-[#00FFFF33] bg-[#050510] p-4 text-sm text-slate-300">
+                              Vault Wisp
+>>>>>>> 939bf3d (mkc3)
                             </div>
                           </div>
                           <div className="mt-5 grid gap-2">
@@ -1136,7 +1333,7 @@ export function RelicRushApp() {
                           </div>
                         </div>
 
-                        <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-5">
+                        <div className="rounded-none border border-[#00FFFF33] bg-black p-5">
                           <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">
                             Last Episode
                           </p>
@@ -1166,26 +1363,36 @@ export function RelicRushApp() {
                   <Section eyebrow="Wardrobe" title="Loadout and prop bag">
                     <div className="grid gap-4">
                       {profile.inventory.length === 0 ? (
+<<<<<<< HEAD
                         <div className="rounded-3xl border border-white/10 bg-black/20 p-5 text-sm text-slate-400">
                           Your bag is empty. Clear scenes, grab relics, and stop leaving the props department unemployed.
+=======
+                        <div className="rounded-none border border-[#00FFFF33] bg-black p-5 text-sm text-slate-400">
+                          Your bag is empty. Clear rooms and collect drops.
+>>>>>>> 939bf3d (mkc3)
                         </div>
                       ) : (
                         profile.inventory.map((item) => (
                           <div
                             key={item.instanceId}
-                            className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4"
+                            className="rounded-none border border-[#00FFFF33] bg-black p-4"
                           >
                             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                               <div className="flex gap-4">
+<<<<<<< HEAD
                                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-slate-950/70 p-2 text-2xl">
                                   <ItemVisual item={item} className="h-full w-full object-contain" />
+=======
+                                <div className="flex h-14 w-14 items-center justify-center rounded-none border border-[#00FFFF33] bg-[#050510] text-2xl">
+                                  {item.icon}
+>>>>>>> 939bf3d (mkc3)
                                 </div>
                                 <div>
                                   <div className="flex flex-wrap items-center gap-2">
                                     <h3 className="text-lg font-semibold text-white">{item.name}</h3>
                                     <InventoryBadge item={item} />
                                     {item.premium ? (
-                                      <span className="rounded-full border border-amber-300/20 bg-amber-300/10 px-2 py-1 text-[11px] uppercase tracking-[0.2em] text-amber-100">
+                                      <span className="rounded-none border border-amber-300/20 bg-amber-300/10 px-2 py-1 text-[11px] uppercase tracking-[0.2em] text-amber-100">
                                         premium
                                       </span>
                                     ) : null}
@@ -1202,7 +1409,7 @@ export function RelicRushApp() {
                                   <button
                                     type="button"
                                     onClick={() => handleEquip(item)}
-                                    className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-2 text-xs text-cyan-100"
+                                    className="rounded-none border border-cyan-400/30 bg-cyan-400/10 px-3 py-2 text-xs text-cyan-100"
                                   >
                                     Equip
                                   </button>
@@ -1211,7 +1418,7 @@ export function RelicRushApp() {
                                   <button
                                     type="button"
                                     onClick={() => handleUseConsumable(item)}
-                                    className="rounded-full border border-lime-400/30 bg-lime-400/10 px-3 py-2 text-xs text-lime-100"
+                                    className="rounded-none border border-lime-400/30 bg-lime-400/10 px-3 py-2 text-xs text-lime-100"
                                   >
                                     Use
                                   </button>
@@ -1222,20 +1429,25 @@ export function RelicRushApp() {
                                       <button
                                         type="button"
                                         onClick={() => void handleMintOnChain(item)}
+<<<<<<< HEAD
                                         disabled={txPending || apiBusy || !wallet.address}
                                         className="rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-2 text-xs text-amber-100 disabled:opacity-40"
+=======
+                                        disabled={txPending || apiBusy}
+                                        className="rounded-none border border-amber-300/30 bg-amber-300/10 px-3 py-2 text-xs text-amber-100 disabled:opacity-40"
+>>>>>>> 939bf3d (mkc3)
                                       >
                                         {txPending ? "Minting…" : "Mint on Monad"}
                                       </button>
                                     ) : (
-                                      <span className="rounded-full border border-lime-400/20 bg-lime-400/10 px-2 py-1 text-[11px] text-lime-100">
+                                      <span className="rounded-none border border-lime-400/20 bg-lime-400/10 px-2 py-1 text-[11px] text-lime-100">
                                         ✓ On-chain
                                       </span>
                                     )}
                                     <button
                                       type="button"
                                       onClick={() => setActiveTab("marketplace")}
-                                      className="rounded-full border border-fuchsia-400/30 bg-fuchsia-400/10 px-3 py-2 text-xs text-fuchsia-100"
+                                      className="rounded-none border border-fuchsia-400/30 bg-fuchsia-400/10 px-3 py-2 text-xs text-fuchsia-100"
                                     >
                                       Market
                                     </button>
@@ -1250,18 +1462,18 @@ export function RelicRushApp() {
                                 .map(([key, value]) => (
                                   <span
                                     key={key}
-                                    className="rounded-full border border-white/10 bg-slate-950/70 px-2 py-1"
+                                    className="rounded-none border border-[#00FFFF33] bg-[#050510] px-2 py-1"
                                   >
                                     +{value} {key}
                                   </span>
                                 ))}
                               {item.healAmount ? (
-                                <span className="rounded-full border border-white/10 bg-slate-950/70 px-2 py-1">
+                                <span className="rounded-none border border-[#00FFFF33] bg-[#050510] px-2 py-1">
                                   heals {item.healAmount}
                                 </span>
                               ) : null}
                               {item.listed ? (
-                                <span className="rounded-full border border-amber-300/20 bg-amber-300/10 px-2 py-1 text-amber-100">
+                                <span className="rounded-none border border-amber-300/20 bg-amber-300/10 px-2 py-1 text-amber-100">
                                   listed on market
                                 </span>
                               ) : null}
@@ -1277,7 +1489,7 @@ export function RelicRushApp() {
                   <Section eyebrow="Bazaar" title="Premium relic exchange">
                     <div className="grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
                       <div className="space-y-4">
-                        <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+                        <div className="rounded-none border border-[#00FFFF33] bg-black p-4">
                           <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">
                             Owned premium relics
                           </p>
@@ -1308,7 +1520,7 @@ export function RelicRushApp() {
                               ownedPremiumArtifacts.map((item) => (
                                 <div
                                   key={item.instanceId}
-                                  className="rounded-3xl border border-white/10 bg-slate-950/65 p-4"
+                                  className="rounded-none border border-[#00FFFF33] bg-[#050510] p-4"
                                 >
                                   <div className="flex items-start justify-between gap-4">
                                     <div>
@@ -1334,14 +1546,14 @@ export function RelicRushApp() {
                                           [item.instanceId]: event.target.value,
                                         }))
                                       }
-                                      className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-cyan-400/35"
+                                      className="w-full rounded-none border border-[#00FFFF33] bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-cyan-400/35"
                                     />
                                     {item.chainTokenId && hasRelicRushMarketAddress() && wallet.address ? (
                                       <button
                                         type="button"
                                         onClick={() => void handleListOnChain(item)}
                                         disabled={item.listed || apiBusy || txPending}
-                                        className="rounded-2xl border border-cyan-400/30 bg-cyan-400/10 px-4 py-3 text-sm text-cyan-100 disabled:opacity-40"
+                                        className="rounded-none border border-cyan-400/30 bg-cyan-400/10 px-4 py-3 text-sm text-cyan-100 disabled:opacity-40"
                                       >
                                         {item.listed ? "Listed" : txPending ? "Listing…" : "List on Monad"}
                                       </button>
@@ -1350,7 +1562,7 @@ export function RelicRushApp() {
                                         type="button"
                                         onClick={() => void handleCreateListing(item)}
                                         disabled={item.listed || apiBusy}
-                                        className="rounded-2xl border border-lime-400/30 bg-lime-400/10 px-4 py-3 text-sm text-lime-100 disabled:opacity-40"
+                                        className="rounded-none border border-lime-400/30 bg-lime-400/10 px-4 py-3 text-sm text-lime-100 disabled:opacity-40"
                                       >
                                         {item.listed ? "Already Listed" : "List Artifact"}
                                       </button>
@@ -1362,14 +1574,14 @@ export function RelicRushApp() {
                           </div>
                         </div>
 
-                        <div className="rounded-[1.5rem] border border-amber-300/20 bg-amber-300/10 p-4 text-sm text-amber-100">
+                        <div className="rounded-none border border-amber-300/20 bg-amber-300/10 p-4 text-sm text-amber-100">
                           {hasRelicRushMarketAddress()
                             ? `On-chain market configured at ${shortenAddress(relicRushMarketAddress)}.`
                             : "UNKNOWN - MANUAL STEP REQUIRED: set NEXT_PUBLIC_RELIC_RUSH_MARKET_ADDRESS to enable live Monad bazaar settlement."}
                         </div>
                       </div>
 
-                      <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+                      <div className="rounded-none border border-[#00FFFF33] bg-black p-4">
                         <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">
                           Live bazaar listings
                         </p>
@@ -1400,7 +1612,7 @@ export function RelicRushApp() {
                             activeListings.map((listing) => (
                               <div
                                 key={listing.id}
-                                className="rounded-3xl border border-white/10 bg-slate-950/65 p-4"
+                                className="rounded-none border border-[#00FFFF33] bg-[#050510] p-4"
                               >
                                 <div className="flex items-start justify-between gap-3">
                                   <div>
@@ -1421,7 +1633,7 @@ export function RelicRushApp() {
                                     type="button"
                                     onClick={() => void handleBuyOnChain(listing)}
                                     disabled={apiBusy || txPending || listing.sellerPlayerId === profile.playerId}
-                                    className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-2 text-xs text-cyan-100 disabled:opacity-40"
+                                    className="rounded-none border border-cyan-400/30 bg-cyan-400/10 px-3 py-2 text-xs text-cyan-100 disabled:opacity-40"
                                   >
                                     {listing.sellerPlayerId === profile.playerId
                                       ? "Your Listing"
@@ -1429,7 +1641,7 @@ export function RelicRushApp() {
                                         ? "Buy on Monad"
                                         : "Buy Artifact"}
                                   </button>
-                                  <span className="rounded-full border border-white/10 bg-black/25 px-3 py-2 text-xs text-slate-300">
+                                  <span className="rounded-none border border-[#00FFFF33] bg-black/25 px-3 py-2 text-xs text-slate-300">
                                     {listing.chainListingId
                                       ? `Chain listing ${shortenAddress(listing.chainListingId)}`
                                       : "Off-chain listing"}
@@ -1447,7 +1659,7 @@ export function RelicRushApp() {
                 {activeTab === "pvp" ? (
                   <Section eyebrow="Duel Stage" title="Build check before live Khanflict">
                     <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-                      <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+                      <div className="rounded-none border border-[#00FFFF33] bg-black p-4">
                         <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">
                           Current build snapshot
                         </p>
@@ -1469,7 +1681,7 @@ export function RelicRushApp() {
                         {MOCK_PVP_OPPONENTS.map((opponent) => (
                           <div
                             key={opponent.id}
-                            className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4"
+                            className="rounded-none border border-[#00FFFF33] bg-black p-4"
                           >
                             <div className="flex items-start justify-between gap-4">
                               <div>
@@ -1485,7 +1697,7 @@ export function RelicRushApp() {
                                 type="button"
                                 onClick={() => void handleMockDuel(opponent.id)}
                                 disabled={apiBusy}
-                                className="rounded-full border border-fuchsia-400/30 bg-fuchsia-400/10 px-3 py-2 text-xs text-fuchsia-100 disabled:opacity-40"
+                                className="rounded-none border border-fuchsia-400/30 bg-fuchsia-400/10 px-3 py-2 text-xs text-fuchsia-100 disabled:opacity-40"
                               >
                                 Simulate Duel
                               </button>
@@ -1506,32 +1718,37 @@ export function RelicRushApp() {
                         type="button"
                         onClick={() => void handleForgeRelic()}
                         disabled={txPending || apiBusy || !wallet.address}
-                        className="rounded-full border border-amber-300/35 bg-amber-300/15 px-4 py-2 text-sm text-amber-100 transition hover:bg-amber-300/25 disabled:opacity-50"
+                        className="rounded-none border border-amber-300/35 bg-amber-300/15 px-4 py-2 text-sm text-amber-100 transition hover:bg-amber-300/25 disabled:opacity-50"
                       >
                         {txPending ? "Rolling credits…" : "⛒ Forge a Relic"}
                       </button>
                     }
                   >
                     <div className="grid gap-4 lg:grid-cols-2">
+<<<<<<< HEAD
                       <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-5">
                         <h3 className="text-2xl font-semibold text-white">Producer's Forge</h3>
+=======
+                      <div className="rounded-none border border-[#00FFFF33] bg-black p-5">
+                        <h3 className="text-2xl font-semibold text-white">Relic Forge</h3>
+>>>>>>> 939bf3d (mkc3)
                         <p className="mt-3 text-sm leading-7 text-slate-300">
                           Pay a small forge fee in MON to mint a new premium relic directly
                           on Monad. The forge creates an Aishwarya Memory Relic with random rarity
                           and drops it straight into your inventory as a chain-owned prop of destiny.
                         </p>
                         <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                          <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4 text-sm text-slate-300">
+                          <div className="rounded-none border border-[#00FFFF33] bg-[#050510] p-4 text-sm text-slate-300">
                             <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">Forge Fee</p>
                             <p className="mt-2 text-lg font-semibold text-amber-200">0.001 MON</p>
                           </div>
-                          <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4 text-sm text-slate-300">
+                          <div className="rounded-none border border-[#00FFFF33] bg-[#050510] p-4 text-sm text-slate-300">
                             <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">Output</p>
                             <p className="mt-2 text-lg font-semibold text-white">🜂 Aishwarya Memory Relic</p>
                           </div>
                         </div>
                       </div>
-                      <div className="rounded-[1.5rem] border border-amber-300/15 bg-amber-300/5 p-5">
+                      <div className="rounded-none border border-amber-300/15 bg-amber-300/5 p-5">
                         <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">How it works</p>
                         <ol className="mt-4 space-y-3 text-sm text-slate-300">
                           <li>1. Connect your wallet to {expectedChainName}</li>
@@ -1539,6 +1756,13 @@ export function RelicRushApp() {
                           <li>3. Your new relic is minted as an ERC-721 on Monad</li>
                           <li>4. Equip it, list it in the bazaar, or trade it</li>
                         </ol>
+<<<<<<< HEAD
+=======
+                        <div className="mt-5 rounded-none border border-amber-300/20 bg-amber-300/10 p-4 text-xs text-amber-100">
+                          Demo-grade randomness. Not suitable for production value-bearing
+                          decisions.
+                        </div>
+>>>>>>> 939bf3d (mkc3)
                       </div>
                     </div>
                   </Section>
@@ -1546,6 +1770,7 @@ export function RelicRushApp() {
               </div>
 
               <div className="flex flex-col gap-5">
+<<<<<<< HEAD
                 <Section eyebrow="Run Feed" title="Status and combat log">
                   <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
                     <p className="text-sm text-slate-300">{status}</p>
@@ -1553,6 +1778,96 @@ export function RelicRushApp() {
                       <div
                         className="h-full rounded-full bg-gradient-to-r from-lime-400 via-cyan-400 to-fuchsia-400 transition-[width] duration-300"
                         style={{ width: `${healthPercent}%` }}
+=======
+                <Section eyebrow="Monad Network" title="On-chain activity">
+                  <div className="space-y-4">
+                    <div className="rounded-none border border-[#00FFFF33] bg-black p-4">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">Network</p>
+                          <p className="mt-2 text-sm text-white">{expectedChainName}</p>
+                        </div>
+                        <div>
+                          <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">Chain ID</p>
+                          <p className="mt-2 text-sm text-white">{expectedChainId}</p>
+                        </div>
+                      </div>
+                      {txPending ? (
+                        <div className="mt-3 rounded-none border border-cyan-400/20 bg-cyan-400/10 p-3 text-xs text-cyan-100">
+                          ⏳ Transaction pending…
+                        </div>
+                      ) : null}
+                    </div>
+
+                    {txActions.length > 0 ? (
+                      <div className="rounded-none border border-[#00FFFF33] bg-black p-4">
+                        <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">
+                          Recent on-chain actions
+                        </p>
+                        <div className="mt-3 space-y-2">
+                          {txActions.map((action) => (
+                            <div
+                              key={action.at.getTime()}
+                              className="rounded-none border border-lime-400/15 bg-lime-400/5 p-3"
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <p className="text-sm font-medium text-white">{action.label}</p>
+                                <span className="rounded-none border border-lime-400/25 bg-lime-400/10 px-2 py-0.5 text-[11px] text-lime-200">
+                                  {action.ms}ms
+                                </span>
+                              </div>
+                              <p className="mt-1 text-xs text-slate-400">
+                                Tx: {shortenAddress(action.txHash)}
+                                {hasMonadExplorerUrl() ? (
+                                  <> · <a href={explorerTxUrl(action.txHash)} target="_blank" rel="noopener noreferrer" className="text-cyan-300 underline">View on Explorer</a></>
+                                ) : null}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="rounded-none border border-[#00FFFF33] bg-black p-4 text-sm text-slate-400">
+                        No on-chain actions yet. Mint, list, buy, or forge to see Monad confirmation times.
+                      </div>
+                    )}
+                  </div>
+                </Section>
+
+                <Section eyebrow="Profile" title={profile.displayName}>
+                  <div className="space-y-4">
+                    <div className="rounded-none border border-[#00FFFF33] bg-black p-4">
+                      <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">
+                        Status feed
+                      </p>
+                      <p className="mt-3 text-sm leading-7 text-slate-200">{status}</p>
+                    </div>
+
+                    <div className="rounded-none border border-[#00FFFF33] bg-black p-4">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">
+                          Vitality
+                        </p>
+                        <p className="text-sm text-white">
+                          {currentHealth}/{derivedStats?.health}
+                        </p>
+                      </div>
+                      <div className="mt-3 h-3 overflow-hidden rounded-none bg-slate-900">
+                        <div
+                          className="h-full rounded-none bg-[linear-gradient(90deg,#b4ff47,#56e5ff)]"
+                          style={{ width: `${healthPercent}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <StatTile label="Attack" value={derivedStats?.attack ?? 0} />
+                      <StatTile label="Defense" value={derivedStats?.defense ?? 0} />
+                      <StatTile label="Speed" value={derivedStats?.speed ?? 0} />
+                      <StatTile
+                        label="Crit"
+                        value={`${Math.round((derivedStats?.critChance ?? 0) * 100)}%`}
+>>>>>>> 939bf3d (mkc3)
                       />
                     </div>
                     <p className="mt-2 text-xs text-slate-500">
@@ -1560,18 +1875,63 @@ export function RelicRushApp() {
                     </p>
                   </div>
 
+<<<<<<< HEAD
                   <div className="mt-4 space-y-3">
                     {combatLog.map((entry) => (
                       <div
                         key={entry.id}
                         className={`rounded-2xl border p-3 text-sm ${
+=======
+                <Section eyebrow="Equipment" title="Current loadout">
+                  <div className="grid gap-3">
+                    {(["weapon", "armor", "artifact", "charm"] as EquipmentSlot[]).map((slot) => {
+                      const slotId = profile.equipped[`${slot}Id` as keyof typeof profile.equipped];
+                      const item = profile.inventory.find((candidate) => candidate.instanceId === slotId);
+
+                      return (
+                        <div
+                          key={slot}
+                          className="rounded-none border border-[#00FFFF33] bg-black p-4"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">
+                                {slot}
+                              </p>
+                              <p className="mt-2 text-sm text-white">
+                                {item ? `${item.icon} ${item.name}` : "Empty slot"}
+                              </p>
+                            </div>
+                            {item ? (
+                              <button
+                                type="button"
+                                onClick={() => handleUnequip(slot)}
+                                className="rounded-none border border-white/15 bg-white/8 px-3 py-2 text-xs text-white"
+                              >
+                                Unequip
+                              </button>
+                            ) : null}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Section>
+
+                <Section eyebrow="Combat Feed" title="Recent events">
+                  <div className="grid gap-3">
+                    {combatLog.map((entry) => (
+                      <div
+                        key={entry.id}
+                        className={`rounded-none border p-4 text-sm ${
+>>>>>>> 939bf3d (mkc3)
                           entry.tone === "good"
                             ? "border-lime-400/20 bg-lime-400/10 text-lime-100"
                             : entry.tone === "bad"
                               ? "border-rose-400/20 bg-rose-400/10 text-rose-100"
                               : entry.tone === "loot"
                                 ? "border-amber-300/20 bg-amber-300/10 text-amber-100"
-                                : "border-white/10 bg-black/20 text-slate-300"
+                                : "border-[#00FFFF33] bg-black text-slate-300"
                         }`}
                       >
                         {entry.text}
@@ -1693,14 +2053,23 @@ export function RelicRushApp() {
                 <Section eyebrow="Receipts" title="Recent purchases">
                   <div className="space-y-3">
                     {purchaseHistory.length === 0 ? (
+<<<<<<< HEAD
                       <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-slate-400">
                         No purchases yet. Hunt a premium relic or buy one from the bazaar.
+=======
+                      <div className="rounded-none border border-[#00FFFF33] bg-black p-4 text-sm text-slate-400">
+                        No purchases yet. Hunt a premium relic or buy one from the market.
+>>>>>>> 939bf3d (mkc3)
                       </div>
                     ) : (
                       purchaseHistory.map((record) => (
                         <div
                           key={record.id}
+<<<<<<< HEAD
                           className="rounded-2xl border border-white/10 bg-black/20 p-4"
+=======
+                          className="rounded-none border border-[#00FFFF33] bg-black p-4 text-sm text-slate-300"
+>>>>>>> 939bf3d (mkc3)
                         >
                           <p className="text-sm font-medium text-white">{record.itemName}</p>
                           <p className="mt-1 text-xs text-slate-400">
@@ -1730,12 +2099,17 @@ export function RelicRushApp() {
           />
         )}
       </div>
+
+      {showInstructions && (
+        <ArcadeInstructionsScreen onStart={handleFinishInstructions} />
+      )}
+
       {/* Toasts overlay */}
       <div className="pointer-events-none fixed bottom-6 right-6 z-50 flex flex-col gap-3">
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`pointer-events-auto flex items-center gap-4 rounded-2xl border p-4 shadow-2xl backdrop-blur-md transition-all duration-300 ${
+            className={`pointer-events-auto flex items-center gap-4 rounded-none border p-4 shadow-2xl backdrop-blur-md transition-all duration-300 ${
               toast.type === "pending"
                 ? "border-cyan-400/30 bg-black/60 text-cyan-100"
                 : toast.type === "success"
@@ -1759,7 +2133,7 @@ export function RelicRushApp() {
                 href={getMonadExplorerTxUrl(toast.txHash)}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-lg bg-white/10 px-2 py-1 text-[10px] uppercase tracking-wider text-white transition hover:bg-white/20"
+                className="rounded-none bg-white/10 px-2 py-1 text-[10px] uppercase tracking-wider text-white transition hover:bg-white/20"
               >
                 View Tx
               </a>

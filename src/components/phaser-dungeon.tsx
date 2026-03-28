@@ -363,6 +363,7 @@ function ExperimentalPhaserDungeon(props: PhaserDungeonProps) {
         }
 
         create() {
+<<<<<<< HEAD
           try {
             this.cameras.main.setBackgroundColor(palette.bg);
             this.buildTextures(palette);
@@ -375,6 +376,86 @@ function ExperimentalPhaserDungeon(props: PhaserDungeonProps) {
               this.mapMetrics.originY,
               this.mapMetrics.widthPx,
               this.mapMetrics.heightPx,
+=======
+          this.cameras.main.setBackgroundColor(palette.bg);
+          this.buildTextures(palette);
+          this.createAnimations();
+          const mapLayers = this.parseMapLayers();
+          this.mapMetrics = this.buildMapMetrics(mapLayers);
+          this.walkableGrid = this.buildWalkableGrid(mapLayers, this.mapMetrics);
+          this.physics.world.setBounds(
+            this.mapMetrics.originX,
+            this.mapMetrics.originY,
+            this.mapMetrics.widthPx,
+            this.mapMetrics.heightPx,
+          );
+          this.buildArenaFrame(palette, this.mapMetrics);
+          this.renderDungeonMap(mapLayers, this.mapMetrics);
+          this.blockers = this.buildCollisionBodies(this.walkableGrid, this.mapMetrics);
+          const encounterLayout = this.resolveEncounterLayout(
+            this.walkableGrid,
+            this.mapMetrics,
+          );
+
+          const playerPack = PLAYER_PACK[callbacksRef.current.archetype];
+          this.playerShadow = this.add
+            .ellipse(0, 0, 28, 12, palette.shadow, 0.42)
+            .setDepth(17);
+          this.player = this.physics.add.sprite(
+            encounterLayout.player.x,
+            encounterLayout.player.y,
+            `${playerPack}-idle`,
+          );
+          this.player
+            .setCollideWorldBounds(true)
+            .setDepth(20)
+            .setScale(0.58);
+          const playerBody = this.getDynamicBody(this.player);
+          playerBody?.setSize(14, 16);
+          playerBody?.setOffset(41, 74);
+          playerBody?.setDrag(1100, 1100);
+          playerBody?.setMaxVelocity(
+            74 + callbacksRef.current.stats.speed * 3,
+            74 + callbacksRef.current.stats.speed * 3,
+          );
+          this.player.anims.play(`${playerPack}-idle`, true);
+          this.physics.add.collider(this.player, this.blockers);
+          const mapWidth = this.mapMetrics.widthPx;
+          const mapHeight = this.mapMetrics.heightPx;
+          const zoomX = SCENE_WIDTH / Math.max(mapWidth, SCENE_WIDTH);
+          const zoomY = SCENE_HEIGHT / Math.max(mapHeight, SCENE_HEIGHT);
+          const zoomTarget = Math.max(0.45, Math.min(1, Math.min(zoomX, zoomY)));
+          const centerX = this.mapMetrics.originX + mapWidth / 2;
+          const centerY = this.mapMetrics.originY + mapHeight / 2;
+
+          this.cameras.main.setBounds(
+            this.mapMetrics.originX,
+            this.mapMetrics.originY,
+            mapWidth,
+            mapHeight,
+          );
+          this.cameras.main.setZoom(zoomTarget);
+          this.cameras.main.centerOn(centerX, centerY);
+
+          this.portal = this.physics.add.sprite(
+            encounterLayout.portal.x,
+            encounterLayout.portal.y,
+            "relic-portal",
+          );
+          this.portal.setVisible(false).setDepth(15);
+          if (this.getDynamicBody(this.portal)) {
+            this.getDynamicBody(this.portal)!.enable = false;
+          }
+
+          this.enemyBodies = this.spawnEnemies(encounterLayout.enemies);
+          this.enemyBodies.forEach((enemy) => {
+            const enemyBody = this.getDynamicBody(enemy.sprite);
+            enemyBody?.setSize(18, 16);
+            enemyBody?.setOffset(55, 88);
+            enemyBody?.setMaxVelocity(
+              44 + enemy.speed * 4,
+              44 + enemy.speed * 4,
+>>>>>>> 939bf3d (mkc3)
             );
             this.renderSceneBackdrop();
             this.buildArenaFrame(palette, this.mapMetrics);

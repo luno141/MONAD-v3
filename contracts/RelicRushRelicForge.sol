@@ -30,7 +30,7 @@ contract RelicRushRelicForge is ERC721URIStorage, Ownable, ReentrancyGuard {
     event ForgeFeeUpdated(uint256 oldFee, uint256 newFee);
 
     constructor(address initialOwner)
-        ERC721("Relic Rush Forged Relics", "RRF")
+    ERC721("KHANFLICT Forged Relics", "KFR")
         Ownable(initialOwner)
     {}
 

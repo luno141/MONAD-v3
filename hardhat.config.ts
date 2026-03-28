@@ -1,6 +1,14 @@
 import { defineConfig } from "hardhat/config";
 import hardhatToolboxMochaEthers from "@nomicfoundation/hardhat-toolbox-mocha-ethers";
+import fs from "node:fs";
+import path from "node:path";
 import "dotenv/config";
+
+const cacheDir = path.join(process.cwd(), "node_modules/.cache/hardhat-nodejs");
+if (!process.env.HARDHAT_CACHE_DIR) {
+  fs.mkdirSync(cacheDir, { recursive: true });
+  process.env.HARDHAT_CACHE_DIR = cacheDir;
+}
 
 const MONAD_RPC_URL = process.env.MONAD_RPC_URL ?? "";
 const PRIVATE_KEY = process.env.PRIVATE_KEY ?? "";
