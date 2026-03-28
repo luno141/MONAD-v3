@@ -1,0 +1,203 @@
+import type {
+  Archetype,
+  CharacterBlueprint,
+  EnemyType,
+  ItemTemplate,
+  PvpOpponent,
+} from "@/src/game/types";
+
+export const DUNGEON_NAME = "Ashen Catacomb";
+
+export const ARCHETYPES: Record<Archetype, CharacterBlueprint> = {
+  Warrior: {
+    archetype: "Warrior",
+    title: "Vanguard",
+    signature: "Heavy hits, thick armor, safest opening class.",
+    lore: "A frontline delver who turns every corridor into a shield wall.",
+    baseStats: {
+      health: 124,
+      attack: 16,
+      defense: 10,
+      speed: 5,
+      critChance: 0.08,
+      luck: 4,
+    },
+  },
+  Rogue: {
+    archetype: "Rogue",
+    title: "Shadowblade",
+    signature: "Fastest movement, highest crits, fragile if cornered.",
+    lore: "A knife dancer who steals momentum before monsters can answer.",
+    baseStats: {
+      health: 92,
+      attack: 14,
+      defense: 5,
+      speed: 9,
+      critChance: 0.2,
+      luck: 8,
+    },
+  },
+  Mage: {
+    archetype: "Mage",
+    title: "Spellbinder",
+    signature: "Highest burst damage and artifact affinity.",
+    lore: "A relic scholar who weaponizes unstable dungeon energy.",
+    baseStats: {
+      health: 84,
+      attack: 18,
+      defense: 4,
+      speed: 7,
+      critChance: 0.12,
+      luck: 6,
+    },
+  },
+};
+
+export const ITEM_TEMPLATES: Record<string, ItemTemplate> = {
+  "vanguard-blade": {
+    templateId: "vanguard-blade",
+    name: "Vanguard Blade",
+    type: "weapon",
+    slot: "weapon",
+    description: "A starter sword balanced for safe dungeon clears.",
+    icon: "⚔",
+    baseValue: 18,
+    premium: false,
+    baseBonuses: { attack: 4, defense: 1 },
+    color: "#7dd3fc",
+  },
+  "whisper-daggers": {
+    templateId: "whisper-daggers",
+    name: "Whisper Daggers",
+    type: "weapon",
+    slot: "weapon",
+    description: "Twin blades that reward speed and precision.",
+    icon: "🗡",
+    baseValue: 22,
+    premium: false,
+    baseBonuses: { attack: 3, speed: 2, critChance: 0.04 },
+    color: "#f472b6",
+  },
+  "ember-staff": {
+    templateId: "ember-staff",
+    name: "Ember Staff",
+    type: "weapon",
+    slot: "weapon",
+    description: "A cracked conduit that amplifies dangerous spells.",
+    icon: "🪄",
+    baseValue: 24,
+    premium: false,
+    baseBonuses: { attack: 5, luck: 1 },
+    color: "#fb923c",
+  },
+  duskmail: {
+    templateId: "duskmail",
+    name: "Duskmail Coat",
+    type: "armor",
+    slot: "armor",
+    description: "Flexible armor woven with scavenged ward-thread.",
+    icon: "🛡",
+    baseValue: 20,
+    premium: false,
+    baseBonuses: { defense: 4, health: 10 },
+    color: "#a78bfa",
+  },
+  "ember-charm": {
+    templateId: "ember-charm",
+    name: "Ember Charm",
+    type: "charm",
+    slot: "charm",
+    description: "A lucky charm that keeps fire in the lungs.",
+    icon: "🔥",
+    baseValue: 16,
+    premium: false,
+    baseBonuses: { speed: 1, luck: 2, critChance: 0.02 },
+    color: "#f97316",
+  },
+  moonbrew: {
+    templateId: "moonbrew",
+    name: "Moonbrew Flask",
+    type: "consumable",
+    description: "Restores composure and a chunk of missing health.",
+    icon: "🧪",
+    baseValue: 14,
+    premium: false,
+    baseBonuses: {},
+    healAmount: 28,
+    color: "#34d399",
+  },
+  "starforged-idol": {
+    templateId: "starforged-idol",
+    name: "Starforged Idol",
+    type: "artifact",
+    slot: "artifact",
+    description: "A premium relic with a market-ready provenance slot.",
+    icon: "🜂",
+    baseValue: 80,
+    premium: true,
+    baseBonuses: { attack: 3, defense: 2, luck: 4 },
+    color: "#fde047",
+  },
+};
+
+export const STARTER_LOADOUTS: Record<Archetype, string[]> = {
+  Warrior: ["vanguard-blade", "duskmail", "moonbrew"],
+  Rogue: ["whisper-daggers", "ember-charm", "moonbrew"],
+  Mage: ["ember-staff", "ember-charm", "moonbrew"],
+};
+
+export const ENEMY_THEME: Record<
+  EnemyType,
+  { name: string; color: number; health: number; attack: number; defense: number; speed: number }
+> = {
+  slime: {
+    name: "Bog Slime",
+    color: 0x4ade80,
+    health: 34,
+    attack: 7,
+    defense: 2,
+    speed: 3,
+  },
+  skeleton: {
+    name: "Dust Skeleton",
+    color: 0xe5e7eb,
+    health: 46,
+    attack: 10,
+    defense: 4,
+    speed: 5,
+  },
+  wisp: {
+    name: "Vault Wisp",
+    color: 0x60a5fa,
+    health: 28,
+    attack: 12,
+    defense: 1,
+    speed: 8,
+  },
+};
+
+export const MOCK_PVP_OPPONENTS: PvpOpponent[] = [
+  {
+    id: "pvp-sable",
+    name: "Sable Fen",
+    archetype: "Rogue",
+    combatPower: 77,
+    note: "Fast finisher with poor armor. Great for testing crit-heavy builds.",
+  },
+  {
+    id: "pvp-warden",
+    name: "Rune Warden",
+    archetype: "Warrior",
+    combatPower: 82,
+    note: "Durable bruiser that exposes weak damage curves quickly.",
+  },
+  {
+    id: "pvp-lyra",
+    name: "Lyra Hex",
+    archetype: "Mage",
+    combatPower: 80,
+    note: "Glass cannon rival tuned to stress artifact-heavy loadouts.",
+  },
+];
+
+export const DEFAULT_MARKET_PRICE_WEI = "2500000000000000";

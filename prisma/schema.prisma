@@ -1,0 +1,179 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Player {
+  id               String               @id
+  displayName      String
+  walletAddress    String?              @unique
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  character        Character?
+  inventoryItems   InventoryItem[]
+  equippedItems    EquippedItem[]
+  dungeonRuns      DungeonRun[]
+  sellerListings   MarketplaceListing[] @relation("SellerListings")
+  buyerListings    MarketplaceListing[] @relation("BuyerListings")
+  purchases        PurchaseHistory[]    @relation("BuyerPurchases")
+  pvpMatches       PvpMatch[]
+
+  @@index([displayName])
+}
+
+model Character {
+  id         String   @id @default(cuid())
+  playerId    String   @unique
+  archetype   String
+  health      Int
+  attack      Int
+  defense     Int
+  speed       Int
+  critChance  Float
+  luck        Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  player      Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([archetype])
+}
+
+model Item {
+  id                String          @id
+  name              String
+  type              String
+  slot              String?
+  description       String
+  icon              String
+  baseValue         Int
+  premium           Boolean         @default(false)
+  baseHealthBonus   Int             @default(0)
+  baseAttackBonus   Int             @default(0)
+  baseDefenseBonus  Int             @default(0)
+  baseSpeedBonus    Int             @default(0)
+  baseCritBonus     Float           @default(0)
+  baseLuckBonus     Int             @default(0)
+  healAmount        Int?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  inventoryItems    InventoryItem[]
+
+  @@index([type])
+  @@index([premium])
+}
+
+model InventoryItem {
+  id             String              @id
+  playerId       String
+  itemId         String
+  templateId     String
+  name           String
+  type           String
+  slot           String?
+  rarity         String
+  description    String
+  icon           String
+  value          Int
+  premium        Boolean             @default(false)
+  healthBonus    Int                 @default(0)
+  attackBonus    Int                 @default(0)
+  defenseBonus   Int                 @default(0)
+  speedBonus     Int                 @default(0)
+  critBonus      Float               @default(0)
+  luckBonus      Int                 @default(0)
+  healAmount     Int?
+  listed         Boolean             @default(false)
+  source         String
+  chainTokenId   String?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  player         Player              @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  item           Item                @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  equippedBy     EquippedItem[]
+  listing        MarketplaceListing?
+
+  @@index([playerId])
+  @@index([premium, listed])
+  @@index([templateId])
+}
+
+model EquippedItem {
+  id              String        @id @default(cuid())
+  playerId         String
+  slot             String
+  inventoryItemId  String
+  createdAt        DateTime     @default(now())
+  player           Player       @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  inventoryItem    InventoryItem @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, slot])
+  @@unique([inventoryItemId])
+  @@index([playerId])
+}
+
+model DungeonRun {
+  id               String   @id
+  playerId         String
+  roomName         String
+  enemiesDefeated  Int
+  lootCollected    Int
+  outcome          String
+  startedAt        DateTime
+  endedAt          DateTime
+  notes            String
+  createdAt        DateTime @default(now())
+  player           Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([playerId, endedAt])
+}
+
+model MarketplaceListing {
+  id               String        @id
+  sellerPlayerId   String
+  buyerPlayerId    String?
+  inventoryItemId  String        @unique
+  priceWei         String
+  status           String
+  chainListingId   String?
+  createdAt        DateTime      @default(now())
+  soldAt           DateTime?
+  seller           Player        @relation("SellerListings", fields: [sellerPlayerId], references: [id], onDelete: Cascade)
+  buyer            Player?       @relation("BuyerListings", fields: [buyerPlayerId], references: [id], onDelete: SetNull)
+  inventoryItem    InventoryItem @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
+  purchase         PurchaseHistory?
+
+  @@index([status, createdAt])
+  @@index([sellerPlayerId])
+  @@index([buyerPlayerId])
+}
+
+model PurchaseHistory {
+  id              String            @id
+  listingId       String            @unique
+  buyerPlayerId   String
+  sellerPlayerId  String
+  itemName        String
+  priceWei        String
+  purchasedAt     DateTime          @default(now())
+  listing         MarketplaceListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  buyer           Player            @relation("BuyerPurchases", fields: [buyerPlayerId], references: [id], onDelete: Cascade)
+
+  @@index([buyerPlayerId, purchasedAt])
+  @@index([sellerPlayerId, purchasedAt])
+}
+
+model PvpMatch {
+  id            String   @id
+  playerId      String
+  opponentName  String
+  outcome       String
+  summary       String
+  createdAt     DateTime @default(now())
+  player        Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([playerId, createdAt])
+}
