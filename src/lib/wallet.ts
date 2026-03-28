@@ -33,19 +33,42 @@ export function hasInjectedWallet() {
   return typeof window !== "undefined" && Boolean(window.ethereum);
 }
 
-export async function connectWallet(): Promise<WalletState> {
+function getInjectedEthereum() {
   if (!window.ethereum) {
     throw new Error("MetaMask-compatible wallet not detected.");
   }
 
-  const provider = new BrowserProvider(window.ethereum);
+  return window.ethereum;
+}
+
+export function getInjectedBrowserProvider() {
+  return new BrowserProvider(getInjectedEthereum());
+}
+
+export function subscribeToWalletEvents(listener: () => void) {
+  if (typeof window === "undefined" || !window.ethereum) {
+    return () => {};
+  }
+
+  const { ethereum } = window;
+  ethereum.on?.("accountsChanged", listener);
+  ethereum.on?.("chainChanged", listener);
+
+  return () => {
+    ethereum.removeListener?.("accountsChanged", listener);
+    ethereum.removeListener?.("chainChanged", listener);
+  };
+}
+
+export async function connectWallet(): Promise<WalletState> {
+  const provider = getInjectedBrowserProvider();
   await provider.send("eth_requestAccounts", []);
 
   return readWalletState();
 }
 
 export async function readWalletState(): Promise<WalletState> {
-  if (!window.ethereum) {
+  if (typeof window === "undefined" || !window.ethereum) {
     return {
       address: null,
       chainId: null,
@@ -54,7 +77,7 @@ export async function readWalletState(): Promise<WalletState> {
     };
   }
 
-  const provider = new BrowserProvider(window.ethereum);
+  const provider = getInjectedBrowserProvider();
   const network = await provider.getNetwork();
   const accounts = (await provider.send("eth_accounts", [])) as string[];
 
@@ -67,11 +90,7 @@ export async function readWalletState(): Promise<WalletState> {
 }
 
 export async function switchToExpectedChain() {
-  if (!window.ethereum) {
-    throw new Error("MetaMask-compatible wallet not detected.");
-  }
-
-  await window.ethereum.request?.({
+  await getInjectedEthereum().request?.({
     method: "wallet_switchEthereumChain",
     params: [{ chainId: `0x${expectedChainId.toString(16)}` }],
   });
@@ -113,11 +132,7 @@ const monadCurrencySymbol =
   process.env.NEXT_PUBLIC_MONAD_CURRENCY_SYMBOL ?? "MON";
 
 export async function addMonadToWallet() {
-  if (!window.ethereum) {
-    throw new Error("MetaMask-compatible wallet not detected.");
-  }
-
-  await window.ethereum.request?.({
+  await getInjectedEthereum().request?.({
     method: "wallet_addEthereumChain",
     params: [
       {

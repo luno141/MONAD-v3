@@ -1,6 +1,6 @@
-# Relic Rush
+# KHAN-FLICT
 
-Relic Rush is a compact dungeon RPG MVP built for Monad testnet. The playable loop is off-chain for responsiveness: choose a class, clear a small dungeon room in Phaser, collect loot, manage your inventory, equip upgrades, preview premium artifacts, list them in a marketplace UI, and test your build in a PvP-ready mock duel flow.
+KHAN-FLICT is a compact dungeon RPG MVP built for Monad testnet. The playable loop is off-chain for responsiveness: play as Shah Rukh Khan, clear a small dungeon room in Phaser, collect loot, manage your inventory, equip upgrades, preview premium artifacts, list them in a marketplace UI, and test your build in a PvP-ready mock duel flow.
 
 ## Stack
 

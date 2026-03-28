@@ -3,6 +3,7 @@ import {
   ARCHETYPES,
   DEFAULT_MARKET_PRICE_WEI,
   ITEM_TEMPLATES,
+  PLAYER_HERO_NAME,
   STARTER_LOADOUTS,
 } from "@/src/game/content";
 import type {
@@ -41,8 +42,8 @@ export function createId(prefix: string) {
 }
 
 export function getDisplayName(archetype: Archetype) {
-  const suffix = Math.floor(Math.random() * 900 + 100);
-  return `${archetype} ${suffix}`;
+  void archetype;
+  return PLAYER_HERO_NAME;
 }
 
 export function formatMon(wei: string | bigint) {

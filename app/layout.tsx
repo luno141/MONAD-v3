@@ -13,9 +13,9 @@ const monoFont = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Relic Rush",
+  title: "KHAN-FLICT",
   description:
-    "A compact dungeon RPG prototype with loot, inventory, tradable premium artifacts, and a PvP-ready loop.",
+    "A meme-fueled dungeon RPG where relic hunters, dramatic one-liners, and a cursed Bollywood dungeon collide.",
 };
 
 export default function RootLayout({

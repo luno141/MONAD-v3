@@ -6,14 +6,77 @@ import type {
   PvpOpponent,
 } from "@/src/game/types";
 
-export const DUNGEON_NAME = "Ashen Catacomb";
+export const GAME_TITLE = "KHAN-FLICT";
+export const DUNGEON_NAME = "Salman's Gym-Powered Dungeon";
+export const PLAYER_ARCHETYPE: Archetype = "Warrior";
+export const PLAYER_HERO_NAME = "Shah Rukh Khan";
+export const HERO_HOOK =
+  "Shah Rukh Khan dives into a cursed dungeon to rescue Aishwarya Rai, out-talk Salman Khan, and somehow survive a black armored car boss phase.";
+
+export const STORY_BEATS = [
+  {
+    eyebrow: "Prologue",
+    title: "The Most Unnecessary Kidnapping Ever",
+    detail:
+      "Salman Khan kidnapped Aishwarya Rai, crowned himself final boss, and turned Filmygarh into a cursed dungeon with pure gym-bro menace.",
+  },
+  {
+    eyebrow: "Squad",
+    title: "Unbalanced On Purpose",
+    detail:
+      "SRK handles style and relic momentum, Amitabh weaponizes narration, and Abhishek solves every room with more bullets than logic.",
+  },
+  {
+    eyebrow: "Finale",
+    title: "Black SUV Destruction Derby",
+    detail:
+      "Every floor escalates until Salman summons an armored car, rage mode triggers, and the dungeon itself becomes the boss arena.",
+  },
+] as const;
+
+export const SQUAD_SPOTLIGHTS: Array<{
+  archetype: Archetype;
+  castName: string;
+  role: string;
+  vibe: string;
+}> = [
+  {
+    archetype: "Warrior",
+    castName: "Shah Rukh Khan",
+    role: "Smooth-talking relic hunter",
+    vibe:
+      "Wins fights with timing, swagger, and one-liners that somehow buff damage.",
+  },
+  {
+    archetype: "Rogue",
+    castName: "Abhishek Bachchan",
+    role: "Dual-pistol bullet storm gremlin",
+    vibe:
+      "Fastest in the squad, lowest patience, and permanently convinced that more bullets is a strategy.",
+  },
+  {
+    archetype: "Mage",
+    castName: "Amitabh Bachchan",
+    role: "Wise savage narrator",
+    vibe:
+      "Turns relics into speeches, enemies into listeners, and every room into a dramatic moral lesson.",
+  },
+] as const;
+
+export const FLOOR_PREVIEW = [
+  "Floor 1: Tutorial where everyone still overacts before attacking.",
+  "Floor 2: Meme relics appear, including sunglasses that boost charisma but not damage.",
+  "Floor 3: Plot-hole corridor with trap spikes, sudden explosions, and optional logic.",
+  "Floor 4: Rajpal Yadav trickster phase with stabbing, fleeing, and re-entry nonsense.",
+  "Final Arena: Salman rage mode, armored car chaos, and cinematic overkill.",
+] as const;
 
 export const ARCHETYPES: Record<Archetype, CharacterBlueprint> = {
   Warrior: {
     archetype: "Warrior",
-    title: "Vanguard",
-    signature: "Heavy hits, thick armor, safest opening class.",
-    lore: "A frontline delver who turns every corridor into a shield wall.",
+    title: "SRK, King of Slow-Mo",
+    signature: "Balanced duelist with smooth dodges, dramatic finishers, and charm-heavy survivability.",
+    lore: "Slides into cursed corridors like every dungeon was written for his entrance shot.",
     baseStats: {
       health: 124,
       attack: 16,
@@ -25,9 +88,9 @@ export const ARCHETYPES: Record<Archetype, CharacterBlueprint> = {
   },
   Rogue: {
     archetype: "Rogue",
-    title: "Shadowblade",
-    signature: "Fastest movement, highest crits, fragile if cornered.",
-    lore: "A knife dancer who steals momentum before monsters can answer.",
+    title: "Abhishek, Bullet Economy Destroyer",
+    signature: "Fastest class, highest crit pressure, and absolutely no respect for ammo conservation.",
+    lore: "Treats every ambush like a music video with more muzzle flash than planning.",
     baseStats: {
       health: 92,
       attack: 14,
@@ -39,9 +102,9 @@ export const ARCHETYPES: Record<Archetype, CharacterBlueprint> = {
   },
   Mage: {
     archetype: "Mage",
-    title: "Spellbinder",
-    signature: "Highest burst damage and artifact affinity.",
-    lore: "A relic scholar who weaponizes unstable dungeon energy.",
+    title: "Amitabh, Living Monologue Engine",
+    signature: "Highest burst and relic scaling, with the calm confidence of someone narrating everyone else's mistakes.",
+    lore: "Makes cursed artifacts behave simply by sounding disappointed in them.",
     baseStats: {
       health: 84,
       attack: 18,
@@ -56,10 +119,10 @@ export const ARCHETYPES: Record<Archetype, CharacterBlueprint> = {
 export const ITEM_TEMPLATES: Record<string, ItemTemplate> = {
   "rock": {
     templateId: "rock",
-    name: "Heavy Rock",
+    name: "Method Actor Brick",
     type: "charm",
     slot: "charm",
-    description: "It's literally just a rock. But it's heavy.",
+    description: "A prop that somehow survived editing. Heavy, useless, emotionally committed.",
     icon: "🪨",
     baseValue: 1,
     premium: false,
@@ -68,10 +131,10 @@ export const ITEM_TEMPLATES: Record<string, ItemTemplate> = {
   },
   "wooden-sword": {
     templateId: "wooden-sword",
-    name: "Wooden Sword",
+    name: "Prop Sword",
     type: "weapon",
     slot: "weapon",
-    description: "A splintering training sword that barely hurts.",
+    description: "Looks dangerous on camera, less so in reality.",
     icon: "🗡️",
     baseValue: 3,
     premium: false,
@@ -80,10 +143,10 @@ export const ITEM_TEMPLATES: Record<string, ItemTemplate> = {
   },
   "vanguard-blade": {
     templateId: "vanguard-blade",
-    name: "Vanguard Blade",
+    name: "Signature Pose Saber",
     type: "weapon",
     slot: "weapon",
-    description: "A starter sword balanced for safe dungeon clears.",
+    description: "Built for clean openings, perfect parries, and dramatic close-ups.",
     icon: "⚔",
     baseValue: 18,
     premium: false,
@@ -92,11 +155,11 @@ export const ITEM_TEMPLATES: Record<string, ItemTemplate> = {
   },
   "whisper-daggers": {
     templateId: "whisper-daggers",
-    name: "Whisper Daggers",
+    name: "Bullet Baarish Pistols",
     type: "weapon",
     slot: "weapon",
-    description: "Twin blades that reward speed and precision.",
-    icon: "🗡",
+    description: "Dual hand cannons that reward reckless confidence and impossible reload timing.",
+    icon: "🔫",
     baseValue: 22,
     premium: false,
     baseBonuses: { attack: 3, speed: 2, critChance: 0.04 },
@@ -104,10 +167,10 @@ export const ITEM_TEMPLATES: Record<string, ItemTemplate> = {
   },
   "ember-staff": {
     templateId: "ember-staff",
-    name: "Ember Staff",
+    name: "Monologue Conductor",
     type: "weapon",
     slot: "weapon",
-    description: "A cracked conduit that amplifies dangerous spells.",
+    description: "A narration staff that makes relics listen and villains question their life choices.",
     icon: "🪄",
     baseValue: 24,
     premium: false,
@@ -116,10 +179,10 @@ export const ITEM_TEMPLATES: Record<string, ItemTemplate> = {
   },
   duskmail: {
     templateId: "duskmail",
-    name: "Duskmail Coat",
+    name: "Slow-Mo Leather Coat",
     type: "armor",
     slot: "armor",
-    description: "Flexible armor woven with scavenged ward-thread.",
+    description: "The coat alone adds 20 percent more hero framing.",
     icon: "🛡",
     baseValue: 20,
     premium: false,
@@ -128,10 +191,10 @@ export const ITEM_TEMPLATES: Record<string, ItemTemplate> = {
   },
   "ember-charm": {
     templateId: "ember-charm",
-    name: "Ember Charm",
+    name: "Hero Sunglasses",
     type: "charm",
     slot: "charm",
-    description: "A lucky charm that keeps fire in the lungs.",
+    description: "Boosts aura, attitude, and the illusion that charisma is a combat stat.",
     icon: "🔥",
     baseValue: 16,
     premium: false,
@@ -140,9 +203,9 @@ export const ITEM_TEMPLATES: Record<string, ItemTemplate> = {
   },
   moonbrew: {
     templateId: "moonbrew",
-    name: "Moonbrew Flask",
+    name: "Masala Energy Flask",
     type: "consumable",
-    description: "Restores composure and a chunk of missing health.",
+    description: "Restores health, swagger, and the ability to keep talking mid-fight.",
     icon: "🧪",
     baseValue: 14,
     premium: false,
@@ -152,10 +215,10 @@ export const ITEM_TEMPLATES: Record<string, ItemTemplate> = {
   },
   "starforged-idol": {
     templateId: "starforged-idol",
-    name: "Starforged Idol",
+    name: "Aishwarya Memory Relic",
     type: "artifact",
     slot: "artifact",
-    description: "A premium relic with a market-ready provenance slot.",
+    description: "A premium artifact tied to the heart of the dungeon and absolutely too dramatic to ignore.",
     icon: "🜂",
     baseValue: 80,
     premium: true,
@@ -175,7 +238,7 @@ export const ENEMY_THEME: Record<
   { name: string; color: number; health: number; attack: number; defense: number; speed: number }
 > = {
   slime: {
-    name: "Bog Slime",
+    name: "Rajpal Gremlin",
     color: 0x4ade80,
     health: 34,
     attack: 7,
@@ -183,7 +246,7 @@ export const ENEMY_THEME: Record<
     speed: 3,
   },
   skeleton: {
-    name: "Dust Skeleton",
+    name: "Bhai Bouncer",
     color: 0xe5e7eb,
     health: 46,
     attack: 10,
@@ -191,7 +254,7 @@ export const ENEMY_THEME: Record<
     speed: 5,
   },
   wisp: {
-    name: "Vault Wisp",
+    name: "SUV Spirit",
     color: 0x60a5fa,
     health: 28,
     attack: 12,
@@ -203,24 +266,24 @@ export const ENEMY_THEME: Record<
 export const MOCK_PVP_OPPONENTS: PvpOpponent[] = [
   {
     id: "pvp-sable",
-    name: "Sable Fen",
+    name: "Nawaz, Shadow Strategist",
     archetype: "Rogue",
     combatPower: 77,
-    note: "Fast finisher with poor armor. Great for testing crit-heavy builds.",
+    note: "Stealth-heavy rival who punishes panic and exposes weak timing.",
   },
   {
     id: "pvp-warden",
-    name: "Rune Warden",
+    name: "Ranveer, Berserker of Bad Plans",
     archetype: "Warrior",
     combatPower: 82,
-    note: "Durable bruiser that exposes weak damage curves quickly.",
+    note: "A loud bruiser who gets stronger as the room gets messier.",
   },
   {
     id: "pvp-lyra",
-    name: "Lyra Hex",
+    name: "Deepika, Precision Assassin",
     archetype: "Mage",
     combatPower: 80,
-    note: "Glass cannon rival tuned to stress artifact-heavy loadouts.",
+    note: "A boss-killer tuned to punish sloppy positioning and weak artifact builds.",
   },
 ];
 
