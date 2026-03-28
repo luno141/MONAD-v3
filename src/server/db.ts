@@ -5,11 +5,7 @@ declare global {
   var __relicRushPrisma__: PrismaClient | undefined;
 }
 
-export function getPrismaClient() {
-  if (!process.env.DATABASE_URL) {
-    return null;
-  }
-
+export function getPrismaClient(): PrismaClient {
   if (!global.__relicRushPrisma__) {
     global.__relicRushPrisma__ = new PrismaClient();
   }

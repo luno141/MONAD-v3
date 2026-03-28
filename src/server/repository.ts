@@ -2,7 +2,6 @@ import { ITEM_TEMPLATES } from "@/src/game/content";
 import {
   createPvpHistoryEntry,
   createStarterProfile,
-  createMockListing,
   simulateDuel,
 } from "@/src/game/helpers";
 import type {
@@ -14,11 +13,9 @@ import type {
   PlayerProfile,
   PlayerSnapshot,
   PurchaseListingInput,
-  PurchaseRecord,
   SyncProfileInput,
 } from "@/src/game/types";
 import { getPrismaClient } from "@/src/server/db";
-import { ensureMockPlayer, getMockStore } from "@/src/server/mock-store";
 
 type PrismaPlayerRecord = Awaited<ReturnType<typeof getPlayerRecord>>;
 
@@ -26,23 +23,6 @@ export async function bootstrapProfile(
   input: BootstrapProfileInput,
 ): Promise<PlayerSnapshot> {
   const prisma = getPrismaClient();
-
-  if (!prisma) {
-    const profile = ensureMockPlayer(
-      input.playerId,
-      input.archetype,
-      input.displayName,
-      input.walletAddress ?? null,
-    );
-
-    return {
-      profile,
-      listings: getMockStore().listings.filter((listing) => listing.status === "active"),
-      purchaseHistory: getMockStore().purchases.filter(
-        (record) => record.buyerPlayerId === input.playerId,
-      ),
-    };
-  }
 
   const existing = await prisma.player.findUnique({
     where: { id: input.playerId },
@@ -113,24 +93,6 @@ export async function bootstrapProfile(
 
 export async function getPlayerSnapshot(playerId: string): Promise<PlayerSnapshot> {
   const prisma = getPrismaClient();
-
-  if (!prisma) {
-    const store = getMockStore();
-    const profile = store.players[playerId];
-
-    if (!profile) {
-      throw new Error("Player profile not found.");
-    }
-
-    return {
-      profile,
-      listings: store.listings.filter((listing) => listing.status === "active"),
-      purchaseHistory: store.purchases.filter(
-        (record) => record.buyerPlayerId === playerId,
-      ),
-    };
-  }
-
   const player = await getPlayerRecord(prisma, playerId);
 
   if (!player) {
@@ -162,26 +124,6 @@ export async function syncProfileState(
   input: SyncProfileInput,
 ): Promise<PlayerSnapshot> {
   const prisma = getPrismaClient();
-
-  if (!prisma) {
-    const store = getMockStore();
-    const profile = store.players[input.playerId];
-
-    if (!profile) {
-      throw new Error("Player profile not found.");
-    }
-
-    store.players[input.playerId] = {
-      ...profile,
-      walletAddress: input.walletAddress ?? profile.walletAddress,
-      inventory: input.inventory,
-      equipped: input.equipped,
-      runs: input.runs,
-      pvpHistory: input.pvpHistory,
-    };
-
-    return getPlayerSnapshot(input.playerId);
-  }
 
   await prisma.$transaction(async (tx) => {
     for (const item of input.inventory) {
@@ -279,10 +221,6 @@ export async function syncProfileState(
 export async function getActiveListings(): Promise<MarketplaceListing[]> {
   const prisma = getPrismaClient();
 
-  if (!prisma) {
-    return getMockStore().listings.filter((listing) => listing.status === "active");
-  }
-
   const listings = await prisma.marketplaceListing.findMany({
     where: { status: "active" },
     include: {
@@ -310,42 +248,6 @@ export async function createMarketListing(
   input: CreateListingInput,
 ): Promise<MarketplaceListing[]> {
   const prisma = getPrismaClient();
-
-  if (!prisma) {
-    const store = getMockStore();
-    const profile = store.players[input.playerId];
-
-    if (!profile) {
-      throw new Error("Player profile not found.");
-    }
-
-    const item = profile.inventory.find((candidate) => candidate.instanceId === input.inventoryItemId);
-    if (!item) {
-      throw new Error("Artifact not found in inventory.");
-    }
-    if (!item.premium) {
-      throw new Error("Only premium artifacts can be listed.");
-    }
-    if (item.listed) {
-      throw new Error("Artifact is already listed.");
-    }
-
-    item.listed = true;
-    store.listings.unshift({
-      id: crypto.randomUUID(),
-      inventoryItemId: item.instanceId,
-      item: { ...item },
-      sellerPlayerId: profile.playerId,
-      sellerName: profile.displayName,
-      priceWei: input.priceWei,
-      status: "active",
-      createdAt: new Date().toISOString(),
-      soldAt: null,
-      chainListingId: null,
-    });
-
-    return getActiveListings();
-  }
 
   const inventoryItem = await prisma.inventoryItem.findUnique({
     where: { id: input.inventoryItemId },
@@ -386,52 +288,6 @@ export async function purchaseMarketListing(
   input: PurchaseListingInput,
 ): Promise<PlayerSnapshot> {
   const prisma = getPrismaClient();
-
-  if (!prisma) {
-    const store = getMockStore();
-    const listing = store.listings.find(
-      (candidate) => candidate.id === input.listingId && candidate.status === "active",
-    );
-
-    if (!listing) {
-      throw new Error("Listing not found.");
-    }
-
-    const buyer = store.players[input.buyerPlayerId];
-    const seller = store.players[listing.sellerPlayerId];
-
-    if (!buyer) {
-      throw new Error("Buyer profile not found.");
-    }
-
-    listing.status = "sold";
-    listing.soldAt = new Date().toISOString();
-
-    if (seller) {
-      seller.inventory = seller.inventory.filter(
-        (item) => item.instanceId !== listing.inventoryItemId,
-      );
-      seller.equipped = clearEquippedReference(seller.equipped, listing.inventoryItemId);
-    }
-
-    buyer.inventory.unshift({
-      ...listing.item,
-      listed: false,
-      source: "market",
-    });
-
-    store.purchases.unshift({
-      id: crypto.randomUUID(),
-      listingId: listing.id,
-      buyerPlayerId: buyer.playerId,
-      sellerPlayerId: listing.sellerPlayerId,
-      itemName: listing.item.name,
-      priceWei: listing.priceWei,
-      purchasedAt: new Date().toISOString(),
-    });
-
-    return getPlayerSnapshot(input.buyerPlayerId);
-  }
 
   const listing = await prisma.marketplaceListing.findUnique({
     where: { id: input.listingId },
@@ -522,7 +378,7 @@ export async function recordMockPvp(
 }
 
 async function getPlayerRecord(
-  prisma: NonNullable<ReturnType<typeof getPrismaClient>>,
+  prisma: ReturnType<typeof getPrismaClient>,
   playerId: string,
 ) {
   return prisma.player.findUnique({
@@ -712,17 +568,4 @@ async function upsertItemTemplate(
       healAmount: template.healAmount ?? null,
     },
   });
-}
-
-function clearEquippedReference(
-  equipped: PlayerProfile["equipped"],
-  inventoryItemId: string,
-) {
-  return {
-    weaponId: equipped.weaponId === inventoryItemId ? null : equipped.weaponId,
-    armorId: equipped.armorId === inventoryItemId ? null : equipped.armorId,
-    artifactId:
-      equipped.artifactId === inventoryItemId ? null : equipped.artifactId,
-    charmId: equipped.charmId === inventoryItemId ? null : equipped.charmId,
-  };
 }
